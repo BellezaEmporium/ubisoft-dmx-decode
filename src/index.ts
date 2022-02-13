@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-underscore-dangle */
 import protobuf from 'protobufjs';
 import path from 'path';
 import { glob } from 'glob';
@@ -111,7 +109,7 @@ export interface TLSStreamExport {
   packets: Packet[];
 }
 
-const decodeRequests = (payloads: TLSPayload[]): any[] => {
+const decodeRequests = (payloads: TLSPayload[]): unknown[] => {
   const openServiceRequests = new Map<number, string>();
   const openConnectionRequests = new Map<number, string>();
   const openConnections = new Map<number, string>();
