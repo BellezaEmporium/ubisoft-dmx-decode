@@ -2,15 +2,21 @@ import protobuf from 'protobufjs';
 import path from 'path';
 import { glob } from 'glob';
 import { readFileSync, outputJSONSync } from 'fs-extra';
+<<<<<<< HEAD
 import { existsSync } from 'fs';
 import yaml from 'yaml';
 import * as demux from './generated/proto/proto_demux/demux';
+=======
+import jsonHandler from './util/json-dupe-parse'; // Handles duplicate JSON keys
+import * as demux from './types/generated/proto/proto_demux/demux';
+>>>>>>> 5365687 (Use generated demux types)
 
 let protoFiles = glob.sync('proto/**/*.proto');
 // Avoid loading local copies of google protobuf helpers — prefer protobufjs' bundled ones
 protoFiles = protoFiles.filter((p) => !p.replace(/\\/g, '/').startsWith('proto/google/protobuf/'));
 console.log(`Loaded ${protoFiles.length} protos`);
 
+<<<<<<< HEAD
 // Create a protobuf Root with a custom resolvePath so imports inside the
 // .proto files (which reference logical folders like `proto_settings/...` or
 // `google/...`) are resolved from the project's `proto` directory without
@@ -20,6 +26,9 @@ const root = new protobuf.Root();
 root.resolvePath = (origin: string, target: string) => {
   // Normalize separators so we can make decisions platform-independently
   const normTarget = target.replace(/\\/g, '/').replace(/^\.\/+/, '');
+=======
+const demuxSchema = packageDefinition.lookup('mg.protocol.demux') as protobuf.Namespace;
+>>>>>>> 5365687 (Use generated demux types)
 
   // absolute targets can be returned as-is
   if (path.isAbsolute(target)) return target;
@@ -109,6 +118,7 @@ export interface TLSStreamExport {
   packets: Packet[];
 }
 
+<<<<<<< HEAD
 const decodeRequests = (payloads: TLSPayload[]): unknown[] => {
   const openServiceRequests = new Map<number, string>();
   const openConnectionRequests = new Map<number, string>();
@@ -241,6 +251,78 @@ const decodeRequests = (payloads: TLSPayload[]): unknown[] => {
     } catch (error) {
       console.warn(`Failed to decode ${payload.direction} at index ${payload.index}: ${error}`);
       return null;
+=======
+  const dataKeys = Object.keys(layers).filter((key) => key.match(/data\d*/));
+  const payloads = dataKeys
+    .map((key) => {
+      const currentData = layers[key]?.['data.data'];
+      if (!currentData) return null;
+      return {
+        frame,
+        direction,
+        data: Buffer.from(currentData.replace(/:/g, ''), 'hex'),
+      };
+    })
+    .filter((p): p is TLSPayload => p !== null);
+  return payloads;
+};
+
+const payloadJoiner = (payloads: TLSPayload[]): TLSPayload[] => {
+  const joinedPayloads: TLSPayload[] = [];
+  let currentPayload: Buffer | null = null;
+  let currentPayloadLength: number | null = null;
+  payloads.forEach((payload) => {
+    const { data } = payload;
+    if (currentPayload === null) {
+      const length = data.readUInt32BE();
+      const dataSeg = data.subarray(4);
+
+      if (dataSeg.length === length) {
+        joinedPayloads.push({ ...payload, data: dataSeg });
+      } else {
+        currentPayload = dataSeg;
+        currentPayloadLength = length;
+      }
+    } else {
+      const dataSeg = Buffer.concat([currentPayload, data]);
+      if (dataSeg.length === currentPayloadLength) {
+        joinedPayloads.push({ ...payload, data: dataSeg });
+        currentPayload = null;
+        currentPayloadLength = null;
+      } else {
+        currentPayload = dataSeg;
+      }
+    }
+  });
+  return joinedPayloads;
+};
+
+const decodeRequests = (payloads: TLSPayload[]): any[] => {
+  const openRequests: Record<number, string> = {};
+  const openConnections: Record<number, string> = {};
+  const decodedDemux = payloads.map((payload) => {
+    const schema = demuxSchema.lookupType(payload.direction);
+    const body = schema.decode(payload.data) as unknown as demux.Upstream | demux.Downstream;
+    if ('request' in body && body.request?.serviceRequest) {
+      const { requestId } = body.request;
+      const { data, service } = body.request.serviceRequest;
+      const serviceSchema = serviceMap[service];
+      if (!serviceSchema) throw new Error(`Missing service: ${service}`);
+      const dataType = serviceSchema.lookupType(payload.direction);
+      const decodedData = dataType.decode(data);
+      openRequests[requestId] = service;
+      body.request.serviceRequest.data = decodedData as never;
+    }
+    if ('response' in body && body.response?.serviceRsp) {
+      const { requestId } = body.response;
+      const { data } = body.response.serviceRsp;
+      const serviceName = openRequests[requestId];
+      const serviceSchema = serviceMap[serviceName];
+      const dataType = serviceSchema.lookupType(payload.direction);
+      const decodedData = dataType.decode(data);
+      delete openRequests[requestId];
+      body.response.serviceRsp.data = decodedData as never;
+>>>>>>> 5365687 (Use generated demux types)
     }
   });
   return decodedDemux;
