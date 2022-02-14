@@ -2,21 +2,15 @@ import protobuf from 'protobufjs';
 import path from 'path';
 import { glob } from 'glob';
 import { readFileSync, outputJSONSync } from 'fs-extra';
-<<<<<<< HEAD
 import { existsSync } from 'fs';
 import yaml from 'yaml';
 import * as demux from './generated/proto/proto_demux/demux';
-=======
-import jsonHandler from './util/json-dupe-parse'; // Handles duplicate JSON keys
-import * as demux from './types/generated/proto/proto_demux/demux';
->>>>>>> 5365687 (Use generated demux types)
 
 let protoFiles = glob.sync('proto/**/*.proto');
 // Avoid loading local copies of google protobuf helpers — prefer protobufjs' bundled ones
 protoFiles = protoFiles.filter((p) => !p.replace(/\\/g, '/').startsWith('proto/google/protobuf/'));
 console.log(`Loaded ${protoFiles.length} protos`);
 
-<<<<<<< HEAD
 // Create a protobuf Root with a custom resolvePath so imports inside the
 // .proto files (which reference logical folders like `proto_settings/...` or
 // `google/...`) are resolved from the project's `proto` directory without
@@ -26,9 +20,6 @@ const root = new protobuf.Root();
 root.resolvePath = (origin: string, target: string) => {
   // Normalize separators so we can make decisions platform-independently
   const normTarget = target.replace(/\\/g, '/').replace(/^\.\/+/, '');
-=======
-const demuxSchema = packageDefinition.lookup('mg.protocol.demux') as protobuf.Namespace;
->>>>>>> 5365687 (Use generated demux types)
 
   // absolute targets can be returned as-is
   if (path.isAbsolute(target)) return target;
@@ -298,32 +289,81 @@ const payloadJoiner = (payloads: TLSPayload[]): TLSPayload[] => {
 };
 
 const decodeRequests = (payloads: TLSPayload[]): any[] => {
-  const openRequests: Record<number, string> = {};
-  const openConnections: Record<number, string> = {};
+  const openServiceRequests = new Map<number, string>();
+  const openConnectionRequests = new Map<number, string>();
+  const openConnections = new Map<number, string>();
   const decodedDemux = payloads.map((payload) => {
     const schema = demuxSchema.lookupType(payload.direction);
-    const body = schema.decode(payload.data) as unknown as demux.Upstream | demux.Downstream;
+    const body = schema.decode(payload.data) as
+      | (protobuf.Message & demux.Upstream)
+      | (protobuf.Message & demux.Downstream);
+
+    // Service requests/responses
     if ('request' in body && body.request?.serviceRequest) {
       const { requestId } = body.request;
       const { data, service } = body.request.serviceRequest;
       const serviceSchema = serviceMap[service];
       if (!serviceSchema) throw new Error(`Missing service: ${service}`);
       const dataType = serviceSchema.lookupType(payload.direction);
-      const decodedData = dataType.decode(data);
-      openRequests[requestId] = service;
-      body.request.serviceRequest.data = decodedData as never;
+      const decodedData = dataType.decode(data) as never;
+      openServiceRequests.set(requestId, service);
+      const updatedBody = body.toJSON();
+      updatedBody.request.serviceRequest.data = decodedData;
+      return updatedBody;
     }
     if ('response' in body && body.response?.serviceRsp) {
       const { requestId } = body.response;
       const { data } = body.response.serviceRsp;
-      const serviceName = openRequests[requestId];
+      const serviceName = openServiceRequests.get(requestId) as string;
       const serviceSchema = serviceMap[serviceName];
       const dataType = serviceSchema.lookupType(payload.direction);
+<<<<<<< HEAD
       const decodedData = dataType.decode(data);
       delete openRequests[requestId];
       body.response.serviceRsp.data = decodedData as never;
 >>>>>>> 5365687 (Use generated demux types)
     }
+=======
+      const decodedData = dataType.decode(data) as never;
+      openServiceRequests.delete(requestId);
+      const updatedBody = body.toJSON();
+      updatedBody.response.serviceRsp.data = decodedData;
+      return updatedBody;
+    }
+
+    // Connection requests/responses
+    if ('request' in body && body.request?.openConnectionReq) {
+      const { requestId } = body.request;
+      const { serviceName } = body.request.openConnectionReq;
+      openConnectionRequests.set(requestId, serviceName);
+    }
+    if ('response' in body && body.response?.openConnectionRsp) {
+      const { requestId } = body.response;
+      const { connectionId } = body.response.openConnectionRsp;
+      const serviceName = openConnectionRequests.get(requestId) as string;
+      openConnections.set(connectionId, serviceName);
+      openConnectionRequests.delete(requestId);
+    }
+
+    // Connection pushes/closed
+    if ('push' in body && body.push?.data) {
+      const { connectionId, data } = body.push.data;
+      const serviceName = openConnections.get(connectionId) as string;
+      const serviceSchema = serviceMap[serviceName];
+      if (!serviceSchema) throw new Error(`Missing service: ${serviceName}`);
+      const dataType = serviceSchema.lookupType(payload.direction);
+      const trimmedPush = data.subarray(4);
+      const decodedData = dataType.decode(trimmedPush) as never;
+      const updatedBody = body.toJSON();
+      updatedBody.push.data.data = decodedData;
+      return updatedBody;
+    }
+    if ('push' in body && body.push?.connectionClosed) {
+      const { connectionId } = body.push.connectionClosed;
+      openConnections.delete(connectionId);
+    }
+    return body.toJSON();
+>>>>>>> 7fd0c4a (Support decoding connection pushes)
   });
   return decodedDemux;
 };
