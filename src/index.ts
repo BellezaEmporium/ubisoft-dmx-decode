@@ -352,7 +352,7 @@ const decodeRequests = (payloads: TLSPayload[]): any[] => {
       const serviceSchema = serviceMap[serviceName];
       if (!serviceSchema) throw new Error(`Missing service: ${serviceName}`);
       const dataType = serviceSchema.lookupType(payload.direction);
-      const trimmedPush = data.subarray(4);
+      const trimmedPush = data.subarray(4); // First 4 bytes are length
       const decodedData = dataType.decode(trimmedPush) as never;
       const updatedBody = body.toJSON();
       updatedBody.push.data.data = decodedData;

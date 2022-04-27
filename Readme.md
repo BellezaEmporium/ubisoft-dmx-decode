@@ -75,6 +75,7 @@ Only needed if you need to update the protos
 1. [Follow steps 1-3 of this guide](https://github.com/claabs/uplay-install-reverse#protobuf-schema).
 1. Copy the `upc_protos` folder here and rename it to `proto`
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 ## How to get the wireshark JSON
@@ -85,3 +86,5 @@ Only needed if you need to update the protos
 1. Filter packet capture with `(ip.dst == 216.98.50.146) || (ip.src == 216.98.50.146)`
 1. File > Export Packet Dissections > As JSON > Save here as `dmx-upc.json`
 >>>>>>> 41a9387 (Update Readme.md)
+=======
+>>>>>>> 180bf16 (Improve readme, clean up dependencies)
