@@ -108,6 +108,7 @@ export interface TLSStreamExport {
   peers: Peer[];
   packets: Packet[];
 }
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 const decodeRequests = (payloads: TLSPayload[]): unknown[] => {
@@ -287,6 +288,8 @@ const payloadJoiner = (payloads: TLSPayload[]): TLSPayload[] => {
   });
   return joinedPayloads;
 };
+=======
+>>>>>>> 2591ee2 (Switch to use YAML exports rather than JSON)
 
 const decodeRequests = (payloads: TLSPayload[]): any[] => {
   const openServiceRequests = new Map<number, string>();
@@ -294,16 +297,28 @@ const decodeRequests = (payloads: TLSPayload[]): any[] => {
   const openConnections = new Map<number, string>();
   const decodedDemux = payloads.map((payload) => {
     const schema = demuxSchema.lookupType(payload.direction);
+    console.log(`${payload.direction} index ${payload.index}:`);
+    if (payload.data.length !== payload.length) {
+      console.warn(
+        `Buffer length of ${payload.data.length} does not match expected length of ${payload.length}`
+      );
+      return null;
+    }
     const body = schema.decode(payload.data) as
       | (protobuf.Message & demux.Upstream)
       | (protobuf.Message & demux.Downstream);
+
+    // console.log(body);
 
     // Service requests/responses
     if ('request' in body && body.request?.serviceRequest) {
       const { requestId } = body.request;
       const { data, service } = body.request.serviceRequest;
       const serviceSchema = serviceMap[service];
-      if (!serviceSchema) throw new Error(`Missing service: ${service}`);
+      if (!serviceSchema) {
+        console.warn(`Missing service: ${service}`);
+        return null;
+      }
       const dataType = serviceSchema.lookupType(payload.direction);
       const decodedData = dataType.decode(data) as never;
       openServiceRequests.set(requestId, service);
@@ -350,7 +365,10 @@ const decodeRequests = (payloads: TLSPayload[]): any[] => {
       const { connectionId, data } = body.push.data;
       const serviceName = openConnections.get(connectionId) as string;
       const serviceSchema = serviceMap[serviceName];
-      if (!serviceSchema) throw new Error(`Missing service: ${serviceName}`);
+      if (!serviceSchema) {
+        console.warn(`Missing service: ${serviceName}`);
+        return null;
+      }
       const dataType = serviceSchema.lookupType(payload.direction);
       const trimmedPush = data.subarray(4); // First 4 bytes are length
       const decodedData = dataType.decode(trimmedPush) as never;
@@ -381,6 +399,7 @@ const main = () => {
       const segmentBuf = Buffer.from(curr, 'base64');
       return Buffer.concat([acc, segmentBuf]);
     }, Buffer.alloc(0));
+<<<<<<< HEAD
     
     // Try to detect if this is actually a valid length prefix
     const potentialLength = joinedBinary.readUInt32BE();
@@ -401,6 +420,10 @@ const main = () => {
       dataSeg = joinedBinary.subarray(4);
     }
     
+=======
+    const length = joinedBinary.readUInt32BE();
+    const dataSeg = joinedBinary.subarray(4);
+>>>>>>> 2591ee2 (Switch to use YAML exports rather than JSON)
     return {
       length,
       data: dataSeg,
