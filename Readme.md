@@ -74,17 +74,3 @@ Only needed if you need to update the protos
 
 1. [Follow steps 1-3 of this guide](https://github.com/claabs/uplay-install-reverse#protobuf-schema).
 1. Copy the `upc_protos` folder here and rename it to `proto`
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
-## How to get the wireshark JSON
-
-1. Setup `lsass` keydumping from [this guide](https://github.com/ngo/win-frida-scripts/tree/master/lsasslkeylog-easy) (special thanks to @Lariaa for helping me find this solution to get around certificate pinning!)
-1. In Wireshark, capture packets from a Ubisoft Connect session
-1. After capture, CTRL+R to reload the packets so decryption applies
-1. Filter packet capture with `(ip.dst == 216.98.50.146) || (ip.src == 216.98.50.146)`
-1. File > Export Packet Dissections > As JSON > Save here as `dmx-upc.json`
->>>>>>> 41a9387 (Update Readme.md)
-=======
->>>>>>> 180bf16 (Improve readme, clean up dependencies)
