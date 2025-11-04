@@ -119,6 +119,10 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# decoded files / tls streams
+tls-stream.yml
+parsed-tls-stream.json
 deduped-dmx-upc.json
 decoded-payloads.json
 decodes.json
