@@ -108,9 +108,7 @@ export interface TLSStreamExport {
   peers: Peer[];
   packets: Packet[];
 }
-<<<<<<< HEAD
 
-<<<<<<< HEAD
 const decodeRequests = (payloads: TLSPayload[]): unknown[] => {
   const openServiceRequests = new Map<number, string>();
   const openConnectionRequests = new Map<number, string>();
@@ -243,145 +241,7 @@ const decodeRequests = (payloads: TLSPayload[]): unknown[] => {
     } catch (error) {
       console.warn(`Failed to decode ${payload.direction} at index ${payload.index}: ${error}`);
       return null;
-=======
-  const dataKeys = Object.keys(layers).filter((key) => key.match(/data\d*/));
-  const payloads = dataKeys
-    .map((key) => {
-      const currentData = layers[key]?.['data.data'];
-      if (!currentData) return null;
-      return {
-        frame,
-        direction,
-        data: Buffer.from(currentData.replace(/:/g, ''), 'hex'),
-      };
-    })
-    .filter((p): p is TLSPayload => p !== null);
-  return payloads;
-};
-
-const payloadJoiner = (payloads: TLSPayload[]): TLSPayload[] => {
-  const joinedPayloads: TLSPayload[] = [];
-  let currentPayload: Buffer | null = null;
-  let currentPayloadLength: number | null = null;
-  payloads.forEach((payload) => {
-    const { data } = payload;
-    if (currentPayload === null) {
-      const length = data.readUInt32BE();
-      const dataSeg = data.subarray(4);
-
-      if (dataSeg.length === length) {
-        joinedPayloads.push({ ...payload, data: dataSeg });
-      } else {
-        currentPayload = dataSeg;
-        currentPayloadLength = length;
-      }
-    } else {
-      const dataSeg = Buffer.concat([currentPayload, data]);
-      if (dataSeg.length === currentPayloadLength) {
-        joinedPayloads.push({ ...payload, data: dataSeg });
-        currentPayload = null;
-        currentPayloadLength = null;
-      } else {
-        currentPayload = dataSeg;
-      }
     }
-  });
-  return joinedPayloads;
-};
-=======
->>>>>>> 2591ee2 (Switch to use YAML exports rather than JSON)
-
-const decodeRequests = (payloads: TLSPayload[]): any[] => {
-  const openServiceRequests = new Map<number, string>();
-  const openConnectionRequests = new Map<number, string>();
-  const openConnections = new Map<number, string>();
-  const decodedDemux = payloads.map((payload) => {
-    const schema = demuxSchema.lookupType(payload.direction);
-    console.log(`${payload.direction} index ${payload.index}:`);
-    if (payload.data.length !== payload.length) {
-      console.warn(
-        `Buffer length of ${payload.data.length} does not match expected length of ${payload.length}`
-      );
-      return null;
-    }
-    const body = schema.decode(payload.data) as
-      | (protobuf.Message & demux.Upstream)
-      | (protobuf.Message & demux.Downstream);
-
-    // console.log(body);
-
-    // Service requests/responses
-    if ('request' in body && body.request?.serviceRequest) {
-      const { requestId } = body.request;
-      const { data, service } = body.request.serviceRequest;
-      const serviceSchema = serviceMap[service];
-      if (!serviceSchema) {
-        console.warn(`Missing service: ${service}`);
-        return null;
-      }
-      const dataType = serviceSchema.lookupType(payload.direction);
-      const decodedData = dataType.decode(data) as never;
-      openServiceRequests.set(requestId, service);
-      const updatedBody = body.toJSON();
-      updatedBody.request.serviceRequest.data = decodedData;
-      return updatedBody;
-    }
-    if ('response' in body && body.response?.serviceRsp) {
-      const { requestId } = body.response;
-      const { data } = body.response.serviceRsp;
-      const serviceName = openServiceRequests.get(requestId) as string;
-      const serviceSchema = serviceMap[serviceName];
-      const dataType = serviceSchema.lookupType(payload.direction);
-<<<<<<< HEAD
-      const decodedData = dataType.decode(data);
-      delete openRequests[requestId];
-      body.response.serviceRsp.data = decodedData as never;
->>>>>>> 5365687 (Use generated demux types)
-    }
-=======
-      const decodedData = dataType.decode(data) as never;
-      openServiceRequests.delete(requestId);
-      const updatedBody = body.toJSON();
-      updatedBody.response.serviceRsp.data = decodedData;
-      return updatedBody;
-    }
-
-    // Connection requests/responses
-    if ('request' in body && body.request?.openConnectionReq) {
-      const { requestId } = body.request;
-      const { serviceName } = body.request.openConnectionReq;
-      openConnectionRequests.set(requestId, serviceName);
-    }
-    if ('response' in body && body.response?.openConnectionRsp) {
-      const { requestId } = body.response;
-      const { connectionId } = body.response.openConnectionRsp;
-      const serviceName = openConnectionRequests.get(requestId) as string;
-      openConnections.set(connectionId, serviceName);
-      openConnectionRequests.delete(requestId);
-    }
-
-    // Connection pushes/closed
-    if ('push' in body && body.push?.data) {
-      const { connectionId, data } = body.push.data;
-      const serviceName = openConnections.get(connectionId) as string;
-      const serviceSchema = serviceMap[serviceName];
-      if (!serviceSchema) {
-        console.warn(`Missing service: ${serviceName}`);
-        return null;
-      }
-      const dataType = serviceSchema.lookupType(payload.direction);
-      const trimmedPush = data.subarray(4); // First 4 bytes are length
-      const decodedData = dataType.decode(trimmedPush) as never;
-      const updatedBody = body.toJSON();
-      updatedBody.push.data.data = decodedData;
-      return updatedBody;
-    }
-    if ('push' in body && body.push?.connectionClosed) {
-      const { connectionId } = body.push.connectionClosed;
-      openConnections.delete(connectionId);
-    }
-    return body.toJSON();
->>>>>>> 7fd0c4a (Support decoding connection pushes)
   });
   return decodedDemux;
 };
@@ -399,7 +259,6 @@ const main = () => {
       const segmentBuf = Buffer.from(curr, 'base64');
       return Buffer.concat([acc, segmentBuf]);
     }, Buffer.alloc(0));
-<<<<<<< HEAD
     
     // Try to detect if this is actually a valid length prefix
     const potentialLength = joinedBinary.readUInt32BE();
@@ -420,10 +279,6 @@ const main = () => {
       dataSeg = joinedBinary.subarray(4);
     }
     
-=======
-    const length = joinedBinary.readUInt32BE();
-    const dataSeg = joinedBinary.subarray(4);
->>>>>>> 2591ee2 (Switch to use YAML exports rather than JSON)
     return {
       length,
       data: dataSeg,
