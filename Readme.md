@@ -28,7 +28,7 @@
     ```ps
     > pip install frida-tools
     > frida --version
-    17.4.2
+    17.4.0
     ```
 
 1. Save [`keylog.js`](https://raw.githubusercontent.com/ngo/win-frida-scripts/master/lsasslkeylog-easy/keylog.js) somewhere you'll remember
