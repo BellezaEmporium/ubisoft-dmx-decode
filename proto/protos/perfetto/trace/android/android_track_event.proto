@@ -1,0 +1,33 @@
+syntax = "proto2";
+
+package perfetto.protos;
+
+import public "protos/perfetto/trace/track_event/track_event.proto";
+
+message AndroidMessageQueue {
+    optional string sending_thread_name = 1;
+    optional string receiving_thread_name = 2;
+    optional int32 message_code = 3;
+    optional uint64 message_delay_ms = 4;
+}
+
+message AndroidBitmap {
+    optional int64 size = 1;
+    optional int32 width = 2;
+    optional int32 height = 3;
+    optional int32 density = 4;
+    optional int32 config = 5;
+    optional int32 mutable_pixels = 6;
+    optional int32 pixel_storage_type = 7;
+    optional int64 id = 8;
+}
+
+message AndroidTrackEvent {
+    extend TrackEvent {
+        optional string binder_service_name = 2001;
+        optional string binder_interface_name = 2002;
+        optional string apex_name = 2003;
+        optional AndroidMessageQueue message_queue = 2004;
+        optional AndroidBitmap bitmap = 2005;
+    }
+}

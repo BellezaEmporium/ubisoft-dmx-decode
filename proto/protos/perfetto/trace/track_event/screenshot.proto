@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package perfetto.protos;
+
+message Screenshot {
+    optional bytes jpg_image = 1;
+}

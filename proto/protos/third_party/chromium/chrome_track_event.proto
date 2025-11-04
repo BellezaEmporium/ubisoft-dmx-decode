@@ -1,0 +1,1786 @@
+syntax = "proto2";
+
+package perfetto.protos;
+
+import public "protos/perfetto/trace/track_event/track_event.proto";
+import public "protos/perfetto/trace/track_event/debug_annotation.proto";
+import public "protos/perfetto/trace/track_event/source_location.proto";
+
+message ChromeMemoryPressureNotification {
+    optional MemoryPressureLevel level = 1;
+    optional uint64 creation_location_iid = 2;
+}
+
+message BlinkTaskScope {
+    optional TaskScopeType type = 1;
+    enum TaskScopeType {
+        TASK_SCOPE_UNKNOWN = 0;
+        TASK_SCOPE_CALLBACK = 1;
+        TASK_SCOPE_SCHEDULED_ACTION = 2;
+        TASK_SCOPE_SCRIPT_EXECUTION = 3;
+        TASK_SCOPE_POST_MESSAGE = 4;
+        TASK_SCOPE_POP_STATE = 5;
+        TASK_SCOPE_SCHEDULER_POST_TASK = 6;
+        TASK_SCOPE_REQUEST_IDLE_CALLBACK = 7;
+        TASK_SCOPE_XML_HTTP_REQUEST = 8;
+        TASK_SCOPE_SOFT_NAVIGATION = 9;
+    }
+    
+    optional int64 scope_task_id = 2;
+    optional int64 running_task_id_to_be_restored = 3;
+    
+    reserved 4, 5, "continuation_task_id_to_be_restored", "parent_task_id";
+}
+
+message ChromeTaskAnnotator {
+    optional uint32 ipc_hash = 1;
+    optional uint64 task_delay_us = 2;
+    
+    optional DelayPolicy delay_policy = 3;
+    enum DelayPolicy {
+        FLEXIBLE_NO_SOONER = 0;
+        FLEXIBLE_PREFER_EARLY = 1;
+        PRECISE = 2;
+    }
+}
+
+message ChromeBrowserContext {
+    optional string id = 2;
+    
+    reserved 1;
+}
+
+message ChromeProfileDestroyer {
+    optional fixed64 profile_ptr = 1;
+    optional bool is_off_the_record = 2;
+    optional string otr_profile_id = 3;
+    optional uint32 host_count_at_creation = 4;
+    optional uint32 host_count_at_destruction = 5;
+    optional fixed64 render_process_host_ptr = 6;
+}
+
+message ChromeTaskPostedToDisabledQueue {
+    optional string task_queue_name = 1;
+    optional uint64 time_since_disabled_ms = 2;
+    optional uint32 ipc_hash = 3;
+    optional uint64 source_location_iid = 4;
+}
+
+message ChromeRasterTask {
+    optional int64 source_frame_number = 1;
+}
+
+message ChromeMessagePumpForUI {
+    optional uint32 message_id = 1;
+    optional uint32 wait_for_object_result = 2;
+}
+
+message RenderFrameImplDeletion {
+    optional FrameDeleteIntention intent = 1;
+    optional bool has_pending_commit = 2;
+    optional bool has_pending_cross_document_commit = 3;
+    optional uint64 frame_tree_node_id = 4;
+}
+
+message ShouldSwapBrowsingInstancesResult {
+    optional uint64 frame_tree_node_id = 1;
+    optional ShouldSwapBrowsingInstance result = 2;
+}
+
+message FrameTreeNodeInfo {
+    optional uint64 frame_tree_node_id = 1;
+    optional bool is_main_frame = 2;
+    optional bool has_speculative_render_frame_host = 3;
+    optional RenderFrameHost current_frame_host = 4;
+    optional RenderFrameHost speculative_frame_host = 5;
+    
+    optional FrameType frame_type = 6;
+    enum FrameType {
+        UNSPECIFIED_FRAME_TYPE = 0;
+        SUBFRAME = 1;
+        PRIMARY_MAIN_FRAME = 2;
+        PRERENDER_MAIN_FRAME = 3;
+        FENCED_FRAME_ROOT = 4;
+    }
+    
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message ChromeHashedPerformanceMark {
+    optional uint32 site_hash = 1;
+    optional string site = 2;
+    optional uint32 mark_hash = 3;
+    optional string mark = 4;
+    optional uint32 execution_context_id = 5;
+    optional uint32 sequence_number = 6;
+}
+
+message ChromeSqlDiagnostics {
+    optional int32 reported_sqlite_error_code = 1;
+    optional int32 error_code = 2;
+    optional int32 last_errno = 3;
+    optional string sql_statement = 4;
+    optional int32 version = 5;
+    repeated string schema_sql_rows = 6;
+    repeated string schema_other_row_names = 7;
+    optional bool has_valid_header = 8;
+    optional bool has_valid_schema = 9;
+    optional string error_message = 10;
+}
+
+message ChromeWebAppBadNavigate {
+    optional bool is_kiosk = 1;
+    optional bool has_hosted_app_controller = 2;
+    optional string app_name = 3;
+    optional uint32 system_app_type = 4;
+    optional bool web_app_provider_registry_ready = 5;
+    optional bool system_web_app_manager_synchronized = 6;
+}
+
+message ResourceBundle {
+    optional uint32 resource_id = 1;
+}
+
+message RenderProcessHost {
+    optional uint32 id = 1;
+    optional string process_lock = 2;
+    optional int32 child_process_id = 3;
+    optional ChromeBrowserContext browser_context = 4;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message RenderProcessHostListener {
+    optional uint32 routing_id = 1;
+}
+
+message RenderProcessHostCleanup {
+    optional uint32 listener_count = 1;
+    optional uint32 keep_alive_ref_count = 2;
+    optional uint32 shutdown_delay_ref_count = 3;
+    optional uint32 worker_ref_count = 4;
+    optional uint32 pending_reuse_ref_count = 5;
+    optional uint32 navigation_state_keepalive_count = 6;
+}
+
+message ChildProcessLauncherPriority {
+    optional bool is_backgrounded = 1;
+    optional bool has_pending_views = 2;
+    
+    optional Importance importance = 3;
+    enum Importance {
+        IMPORTANCE_NORMAL = 1;
+        IMPORTANCE_MODERATE = 2;
+        IMPORTANCE_IMPORTANT = 3;
+    }
+}
+
+message ChromeExtensionId {
+    optional string extension_id = 1;
+    optional uint32 pseudonymized_extension_id = 2;
+}
+
+message SiteInstance {
+    optional int32 site_instance_id = 1;
+    optional int32 browsing_instance_id = 2;
+    optional bool is_default = 3;
+    optional bool has_process = 4;
+    optional int32 related_active_contents_count = 5;
+    optional int32 active_rfh_count = 6;
+    optional SiteInstanceGroup site_instance_group = 7;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message SiteInstanceGroup {
+    optional int32 site_instance_group_id = 1;
+    optional int32 active_frame_count = 2;
+    optional RenderProcessHost process = 3;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message WebExposedIsolationInfo {
+    optional bool is_isolated = 1;
+    optional string origin = 2;
+    optional bool is_isolated_application = 3;
+}
+
+message UrlInfo {
+    optional string url = 1;
+    optional string origin = 2;
+    optional bool is_sandboxed = 3;
+    optional bool is_pdf = 4;
+    optional bool is_coop_isolation_requested = 5;
+    optional int32 origin_isolation_request = 6;
+    optional bool is_prefetch_with_cross_site_contamination = 7;
+    optional WebExposedIsolationInfo web_exposed_isolation_info = 8;
+    optional string storage_partition_config = 9;
+}
+
+message RenderViewHost {
+    optional int32 rvh_map_id = 1;
+    optional int32 routing_id = 2;
+    optional int32 process_id = 3;
+    optional RenderProcessHost process = 6;
+    optional bool is_in_back_forward_cache = 4;
+    optional bool renderer_view_created = 5;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message RenderFrameProxyHost {
+    optional int32 routing_id = 1;
+    optional int32 process_id = 2;
+    optional int32 rvh_map_id = 3;
+    optional int32 site_instance_id = 4;
+    optional bool is_render_frame_proxy_live = 5;
+    optional int32 site_instance_group_id = 6;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message AndroidView {
+    optional int32 id = 1;
+    optional int32 parent_id = 2;
+    optional bool is_shown = 3;
+    optional bool is_dirty = 4;
+    optional string class_name = 5;
+    optional string resource_name = 6;
+}
+
+message AndroidActivity {
+    optional string name = 1;
+    repeated AndroidView view = 2;
+}
+
+message AndroidViewDump {
+    repeated AndroidActivity activity = 1;
+}
+
+message ParkableStringCompressInBackground {
+    optional int32 size_bytes = 1;
+}
+
+message ParkableStringUnpark {
+    optional int32 size_bytes = 1;
+    optional int32 time_since_last_disk_write_sec = 2;
+}
+
+message ChromeSamplingProfilerSampleCollected {
+    optional int32 frame_count = 1;
+    
+    optional WriteStatus write_status = 2;
+    enum WriteStatus {
+        WRITE_STATUS_NONE = 0;
+        WRITE_STATUS_BUFFERING_SAMPLE = 1;
+        WRITE_STATUS_WRITING_BUFFERED = 2;
+        WRITE_STATUS_WRITING_TO_TRACE = 3;
+    }
+    
+    optional int32 sampled_thread_id = 3;
+}
+
+message SendBeginMainFrameToCommitBreakdown {
+    optional uint64 handle_input_events_us = 1;
+    optional uint64 animate_us = 2;
+    optional uint64 style_update_us = 3;
+    optional uint64 layout_update_us = 4;
+    optional uint64 accessibility_update_us = 12;
+    optional uint64 prepaint_us = 5;
+    optional uint64 compositing_inputs_us = 6;
+    optional uint64 compositing_assignments_us = 7;
+    optional uint64 paint_us = 8;
+    optional uint64 composite_commit_us = 9;
+    optional uint64 update_layers_us = 10;
+    optional uint64 begin_main_sent_to_started_us = 11;
+}
+
+message GlobalRenderFrameHostId {
+    optional int32 routing_id = 1;
+    optional int32 process_id = 2;
+}
+
+message BrowsingContextState {
+    optional int32 browsing_instance_id = 1;
+    optional int32 coop_related_group_id = 2 [deprecated = true];
+    optional string coop_related_group_token = 3;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message RenderFrameHost {
+    optional RenderProcessHost process = 1;
+    optional GlobalRenderFrameHostId render_frame_host_id = 2;
+    
+    optional LifecycleState lifecycle_state = 3;
+    enum LifecycleState {
+        UNSPECIFIED = 0;
+        SPECULATIVE = 1;
+        PENDING_COMMIT = 2;
+        PRERENDERING = 3;
+        ACTIVE = 4;
+        IN_BACK_FORWARD_CACHE = 5;
+        RUNNING_UNLOAD_HANDLERS = 6;
+        READY_TO_BE_DELETED = 7;
+    }
+    
+    optional string origin = 4;
+    optional string url = 5;
+    optional uint64 frame_tree_node_id = 6;
+    optional SiteInstance site_instance = 7;
+    optional RenderFrameHost parent = 8;
+    optional RenderFrameHost outer_document = 9;
+    optional RenderFrameHost embedder = 10;
+    optional BrowsingContextState browsing_context_state = 11;
+    optional FrameTreeNodeInfo.FrameType frame_type = 12;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message ChromeThreadPoolTask {
+    optional Priority task_priority = 1;
+    enum Priority {
+        PRIORITY_UNSPECIFIED = 0;
+        PRIORITY_BEST_EFFORT = 1;
+        PRIORITY_USER_VISIBLE = 2;
+        PRIORITY_USER_BLOCKING = 3;
+    }
+    
+    optional ExecutionMode execution_mode = 2;
+    enum ExecutionMode {
+        EXECTUION_MODE_UNSPECIFIED = 0;
+        EXECUTION_MODE_PARALLEL = 1;
+        EXECUTION_MODE_SEQUENCED = 2;
+        EXECUTION_MODE_SINGLE_THREAD = 3;
+        EXECUTION_MODE_JOB = 4;
+    }
+    
+    optional int64 sequence_token = 3;
+    
+    optional ShutdownBehavior shutdown_behavior = 4;
+    enum ShutdownBehavior {
+        SHUTDOWN_BEHAVIOR_UNSPECIFIED = 0;
+        SHUTDOWN_BEHAVIOR_CONTINUE_ON_SHUTDOWN = 1;
+        SHUTDOWN_BEHAVIOR_SKIP_ON_SHUTDOWN = 2;
+        SHUTDOWN_BEHAVIOR_BLOCK_SHUTDOWN = 3;
+    }
+}
+
+message BackForwardCacheCanStoreDocumentResult {
+    optional BackForwardCacheNotRestoredReason back_forward_cache_not_restored_reason = 1;
+    enum BackForwardCacheNotRestoredReason {
+        NOT_MAIN_FRAME = 1;
+        BACK_FORWARD_CACHE_DISABLED = 2;
+        RELATED_ACTIVE_CONTENTS_EXIST = 3;
+        HTTP_STATUS_NOT_OK = 4;
+        SCHEME_NOT_HTTP_OR_HTTPS = 5;
+        LOADING = 6;
+        WAS_GRANTED_MEDIA_ACCESS = 7;
+        BLOCKLISTED_FEATURES = 8;
+        DISABLE_FOR_RENDER_FRAME_HOST_CALLED = 9;
+        DOMAIN_NOT_ALLOWED = 10;
+        HTTP_METHOD_NOT_GET = 11;
+        SUBFRAME_IS_NAVIGATING = 12;
+        TIMEOUT = 13;
+        CACHE_LIMIT = 14;
+        JAVASCRIPT_EXECUTION = 15;
+        RENDERER_PROCESS_KILLED = 16;
+        RENDERER_PROCESS_CRASHED = 17;
+        GRANTED_MEDIA_STREAM_ACCESS = 19;
+        SCHEDULER_TRACKED_FEATURE_USED = 20;
+        CONFLICTING_BROWSING_INSTANCE = 21;
+        CACHE_FLUSHED = 22;
+        SERVICE_WORKER_VERSION_ACTIVATION = 23;
+        SESSION_RESTORED = 24;
+        UNKNOWN = 25;
+        SERVICE_WORKER_POST_MESSAGE = 26;
+        ENTERED_BACK_FORWARD_CACHE_BEFORE_SERVICE_WORKER_HOST_ADDED = 27;
+        NOT_MOST_RECENT_NAVIGATION_ENTRY = 28;
+        SERVICE_WORKER_CLAIM = 29;
+        IGNORE_EVENT_AND_EVICT = 30;
+        HAVE_INNER_CONTENTS = 31;
+        TIMEOUT_PUTTING_IN_CACHE = 32;
+        BACK_FORWARD_CACHE_DISABLED_BY_LOW_MEMORY = 33;
+        BACK_FORWARD_CACHE_DISABLED_BY_COMMAND_LINE = 34;
+        NETWORK_REQUEST_REDIRECTED = 35;
+        NETWORK_REQUEST_TIMEOUT = 36;
+        NETWORK_EXCEEDS_BUFFER_LIMIT = 37;
+        NAVIGATION_CANCELLED_WHILE_RESTORING = 38;
+        BACK_FORWARD_CACHE_DISABLED_FOR_PRERENDER = 39;
+        USER_AGENT_OVERRIDE_DIFFERS = 40;
+        NETWORK_REQUEST_DATAPIPE_DRAINED_AS_BYTES_CONSUMER = 41;
+        FOREGROUND_CACHE_LIMIT = 42;
+        BROWSING_INSTANCE_NOT_SWAPPED = 43;
+        BACK_FORWARD_CACHE_DISABLED_FOR_DELEGATE = 44;
+        OPT_IN_UNLOAD_HEADER_NOT_PRESENT = 45;
+        UNLOAD_HANDLER_EXISTS_IN_MAIN_FRAME = 46;
+        UNLOAD_HANDLER_EXISTS_IN_SUBFRAME = 47;
+        SERVICE_WORKER_UNREGISTRATION = 48;
+        CACHE_CONTROL_NO_STORE = 49;
+        CACHE_CONTROL_NO_STORE_COOKIE_MODIFIED = 50;
+        CACHE_CONTROL_NO_STORE_HTTP_ONLY_COOKIE_MODIFIED = 51;
+        NO_RESPONSE_HEAD = 52;
+        ACTIVATION_NAVIGATION_DISALLOWED_FOR_BUG_1234857 = 53;
+        ERROR_DOCUMENT = 54;
+        FENCED_FRAMES_EMBEDDER = 55;
+        COOKIE_DISABLED = 56;
+        HTTP_AUTH_REQUIRED = 57;
+        COOKIE_FLUSHED = 58;
+        BROADCAST_CHANNEL_ON_MESSAGE = 59;
+        WEBVIEW_SETTINGS_CHANGED = 60;
+        WEBVIEW_JAVASCRIPT_OBJECT_CHANGED = 61;
+        WEBVIEW_MESSAGE_LISTENER_INJECTED = 62;
+        WEBVIEW_SAFE_BROWSING_ALLOWLIST_CHANGED = 63;
+        WEBVIEW_DOCUMENT_START_JAVASCRIPT_CHANGED = 64;
+        CACHE_CONTROL_NO_STORE_DEVICE_BOUND_SESSION_TERMINATED = 65;
+    }
+}
+
+message RendererMainThreadTaskExecution {
+    optional TaskType task_type = 1;
+    enum TaskType {
+        TASK_TYPE_UNKNOWN = 0;
+        TASK_TYPE_DOM_MANIPULATION = 1;
+        TASK_TYPE_USER_INTERACTION = 2;
+        TASK_TYPE_NETWORKING = 3;
+        TASK_TYPE_NETWORKING_CONTROL = 4;
+        TASK_TYPE_HISTORY_TRAVERSAL = 5;
+        TASK_TYPE_EMBED = 6;
+        TASK_TYPE_MEDIA_ELEMENT_EVENT = 7;
+        TASK_TYPE_CANVAS_BLOB_SERIALIZATION = 8;
+        TASK_TYPE_MICROTASK = 9;
+        TASK_TYPE_JAVASCRIPT_TIMER_DELAYED_HIGH_NESTING = 10;
+        TASK_TYPE_REMOTE_EVENT = 11;
+        TASK_TYPE_WEB_SOCKET = 12;
+        TASK_TYPE_POSTED_MESSAGE = 13;
+        TASK_TYPE_UNSHIPPED_PORT_MESSAGE = 14;
+        TASK_TYPE_FILE_READING = 15;
+        TASK_TYPE_DATABASE_ACCESS = 16;
+        TASK_TYPE_PRESENTATION = 17;
+        TASK_TYPE_SENSOR = 18;
+        TASK_TYPE_PERFORMANCE_TIMELINE = 19;
+        TASK_TYPE_WEB_GL = 20;
+        TASK_TYPE_IDLE_TASK = 21;
+        TASK_TYPE_MISC_PLATFORM_API = 22;
+        TASK_TYPE_INTERNAL_DEFAULT = 23;
+        TASK_TYPE_INTERNAL_LOADING = 24;
+        TASK_TYPE_INTERNAL_TEST = 26;
+        TASK_TYPE_INTERNAL_WEB_CRYPTO = 27;
+        TASK_TYPE_INTERNAL_MEDIA = 29;
+        TASK_TYPE_INTERNAL_MEDIA_REALTIME = 30;
+        TASK_TYPE_INTERNAL_USER_INTERACTION = 32;
+        TASK_TYPE_INTERNAL_INSPECTOR = 33;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_V8 = 37;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_COMPOSITOR = 38;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_DEFAULT = 39;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_INPUT = 40;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_IDLE = 41;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_CONTROL = 43;
+        TASK_TYPE_INTERNAL_INTERSECTION_OBSERVER = 44;
+        TASK_TYPE_COMPOSITOR_THREAD_TASK_QUEUE_DEFAULT = 45;
+        TASK_TYPE_WORKER_THREAD_TASK_QUEUE_DEFAULT = 46;
+        TASK_TYPE_WORKER_THREAD_TASK_QUEUE_V8 = 47;
+        TASK_TYPE_WORKER_THREAD_TASK_QUEUE_COMPOSITOR = 48;
+        TASK_TYPE_COMPOSITOR_THREAD_TASK_QUEUE_INPUT = 49;
+        TASK_TYPE_NETWORKING_WITH_URL_LOADER_ANNOTATION = 50;
+        TASK_TYPE_WORKER_ANIMATION = 51;
+        TASK_TYPE_INTERNAL_TRANSLATION = 55;
+        TASK_TYPE_FONT_LOADING = 56;
+        TASK_TYPE_APPLICATION_LIFECYCLE = 57;
+        TASK_TYPE_BACKGROUND_FETCH = 58;
+        TASK_TYPE_PERMISSION = 59;
+        TASK_TYPE_SERVICE_WORKER_CLIENT_MESSAGE = 60;
+        TASK_TYPE_INTERNAL_CONTENT_CAPTURE = 61;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_MEMORY_PURGE = 62;
+        TASK_TYPE_INTERNAL_NAVIGATION_ASSOCIATED = 63;
+        TASK_TYPE_INTERNAL_NAVIGATION_ASSOCIATED_UNFREEZABLE = 64;
+        TASK_TYPE_INTERNAL_CONTINUE_SCRIPT_LOADING = 65;
+        TASK_TYPE_WEB_LOCKS = 66;
+        TASK_TYPE_WEB_SCHEDULING_POSTED_TASK = 67;
+        TASK_TYPE_INTERNAL_FRAME_LIFE_CYCLE_CONTROL = 68;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_NON_WAKING = 69;
+        TASK_TYPE_INTERNAL_FIND_IN_PAGE = 70;
+        TASK_TYPE_INTERNAL_HIGH_PRIORITY_LOCAL_FRAME = 71;
+        TASK_TYPE_JAVASCRIPT_TIMER_IMMEDIATE = 72;
+        TASK_TYPE_JAVASCRIPT_TIMER_DELAYED_LOW_NESTING = 73;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_IPC_TRACKING = 74;
+        TASK_TYPE_NETWORKING_UNFREEZABLE = 75;
+        TASK_TYPE_WAKE_LOCK = 76;
+        TASK_TYPE_INTERNAL_INPUT_BLOCKING = 77;
+        TASK_TYPE_WEB_GPU = 78;
+        TASK_TYPE_INTERNAL_POST_MESSAGE_FORWARDING = 79;
+        TASK_TYPE_INTERNAL_NAVIGATION_CANCELLATION = 80;
+        TASK_TYPE_LOW_PRIORITY_SCRIPT_EXECUTION = 81;
+        TASK_TYPE_STORAGE = 82;
+        TASK_TYPE_NETWORKING_UNFREEZABLE_RENDER_BLOCKING_LOADING = 83;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_V8_USER_VISIBLE = 84;
+        TASK_TYPE_CLIPBOARD = 85;
+        TASK_TYPE_MACHINE_LEARNING = 86;
+        TASK_TYPE_MAIN_THREAD_TASK_QUEUE_V8_BEST_EFFORT = 87;
+        TASK_TYPE_INTERNAL_AUTOFILL = 88;
+    }
+    
+    optional bool frame_visible = 2;
+    optional bool page_visible = 3;
+    
+    optional FrameType frame_type = 4;
+    enum FrameType {
+        FRAME_TYPE_UNSPECIFIED = 0;
+        FRAME_TYPE_MAIN_FRAME = 1;
+        FRAME_TYPE_SAME_ORIGIN_SUBFRAME = 2;
+        FRAME_TYPE_CROSS_ORIGIN_SUBFRAME = 3;
+    }
+    
+    optional bool is_ad_frame = 5;
+}
+
+message EventLatency {
+    optional EventType event_type = 1;
+    enum EventType {
+        EVENT_TYPE_UNSPECIFIED = 0;
+        MOUSE_PRESSED = 1;
+        MOUSE_RELEASED = 2;
+        MOUSE_WHEEL = 3;
+        KEY_PRESSED = 4;
+        KEY_RELEASED = 5;
+        TOUCH_PRESSED = 6;
+        TOUCH_RELEASED = 7;
+        TOUCH_MOVED = 8;
+        GESTURE_SCROLL_BEGIN = 9;
+        GESTURE_SCROLL_UPDATE = 10;
+        GESTURE_SCROLL_END = 11;
+        GESTURE_DOUBLE_TAP = 12;
+        GESTURE_LONG_PRESS = 13;
+        GESTURE_LONG_TAP = 14;
+        GESTURE_SHOW_PRESS = 15;
+        GESTURE_TAP = 16;
+        GESTURE_TAP_CANCEL = 17;
+        GESTURE_TAP_DOWN = 18;
+        GESTURE_TAP_UNCONFIRMED = 19;
+        GESTURE_TWO_FINGER_TAP = 20;
+        FIRST_GESTURE_SCROLL_UPDATE = 21;
+        MOUSE_DRAGGED = 22;
+        GESTURE_PINCH_BEGIN = 23;
+        GESTURE_PINCH_END = 24;
+        GESTURE_PINCH_UPDATE = 25;
+        INERTIAL_GESTURE_SCROLL_UPDATE = 26;
+        MOUSE_MOVED_EVENT = 27;
+    }
+    
+    optional bool has_high_latency = 2;
+    repeated string high_latency_stage = 3;
+    optional int64 event_latency_id = 4;
+    optional bool is_janky_scrolled_frame = 5;
+    optional double vsync_interval_ms = 6;
+    optional int64 surface_frame_trace_id = 7;
+    optional int64 display_trace_id = 8;
+}
+
+message ProcessSingleton {
+    optional RemoteProcessInteractionResult remote_process_interaction_result = 1;
+    enum RemoteProcessInteractionResult {
+        INTERACTION_RESULT_UNSPECIFIED = 0;
+        TERMINATE_FAILED = 1;
+        REMOTE_PROCESS_NOT_FOUND = 2;
+        TERMINATE_WAIT_TIMEOUT = 3;
+        RUNNING_PROCESS_NOTIFY_ERROR = 4;
+        TERMINATE_NOT_ENOUGH_PERMISSIONS = 5;
+        REMOTE_PROCESS_SHUTTING_DOWN = 6;
+        PROFILE_UNLOCKED = 7;
+        PROFILE_UNLOCKED_BEFORE_KILL = 8;
+        SAME_BROWSER_INSTANCE = 9;
+        SAME_BROWSER_INSTANCE_BEFORE_KILL = 10;
+        FAILED_TO_EXTRACT_PID = 11;
+        INVALID_LOCK_FILE = 12;
+        ORPHANED_LOCK_FILE = 13;
+        USER_REFUSED_TERMINATION = 14;
+        TERMINATE_SUCCEEDED = 100;
+    }
+    
+    optional RemoteHungProcessTerminateReason remote_process_terminate_reason = 2;
+    enum RemoteHungProcessTerminateReason {
+        TERMINATE_REASON_UNSPECIFIED = 0;
+        USER_ACCEPTED_TERMINATION = 1;
+        NO_VISIBLE_WINDOW_FOUND = 2;
+        NOTIFY_ATTEMPTS_EXCEEDED = 3;
+        SOCKET_WRITE_FAILED = 4;
+        SOCKET_READ_FAILED = 5;
+    }
+}
+
+message NavigationHandle {
+    optional int64 navigation_id = 1;
+    optional bool has_committed = 2;
+    optional bool is_error_page = 3;
+    optional FrameTreeNodeInfo frame_tree_node = 4;
+    optional RenderFrameHost render_frame_host = 5;
+    repeated DebugAnnotation debug_annotations = 99;
+}
+
+message AndroidIPC {
+    optional string name = 1;
+    optional int64 dur_ms = 2;
+}
+
+message SequenceManagerTask {
+    optional Priority priority = 1;
+    enum Priority {
+        UNKNOWN = 0;
+        CONTROL_PRIORITY = 1;
+        HIGHEST_PRIORITY = 2;
+        VERY_HIGH_PRIORITY = 3;
+        HIGH_PRIORITY = 4;
+        NORMAL_PRIORITY = 5;
+        LOW_PRIORITY = 6;
+        BEST_EFFORT_PRIORITY = 7;
+        HIGH_PRIORITY_CONTINUATION = 8;
+        NORMAL_PRIORITY_CONTINUATION = 9;
+        LOW_PRIORITY_CONTINUATION = 10;
+        EXTREMELY_HIGH_PRIORITY = 11;
+    }
+    
+    optional QueueName queue_name = 2;
+    enum QueueName {
+        UNKNOWN_TQ = 0;
+        DEFAULT_TQ = 1;
+        TASK_ENVIRONMENT_DEFAULT_TQ = 2;
+        TEST2_TQ = 3;
+        TEST_TQ = 4;
+        CONTROL_TQ = 5;
+        SUBTHREAD_CONTROL_TQ = 6;
+        SUBTHREAD_DEFAULT_TQ = 7;
+        SUBTHREAD_INPUT_TQ = 8;
+        UI_BEST_EFFORT_TQ = 9;
+        UI_BOOTSTRAP_TQ = 10;
+        UI_CONTROL_TQ = 11;
+        UI_DEFAULT_TQ = 12;
+        UI_NAVIGATION_NETWORK_RESPONSE_TQ = 13;
+        UI_RUN_ALL_PENDING_TQ = 14;
+        UI_SERVICE_WORKER_STORAGE_CONTROL_RESPONSE_TQ = 15;
+        UI_THREAD_TQ = 16;
+        UI_USER_BLOCKING_TQ = 17;
+        UI_USER_INPUT_TQ = 18;
+        UI_USER_VISIBLE_TQ = 19;
+        IO_BEST_EFFORT_TQ = 20;
+        IO_BOOTSTRAP_TQ = 21;
+        IO_CONTROL_TQ = 22;
+        IO_DEFAULT_TQ = 23;
+        IO_NAVIGATION_NETWORK_RESPONSE_TQ = 24;
+        IO_RUN_ALL_PENDING_TQ = 25;
+        IO_SERVICE_WORKER_STORAGE_CONTROL_RESPONSE_TQ = 26;
+        IO_THREAD_TQ = 27;
+        IO_USER_BLOCKING_TQ = 28;
+        IO_USER_INPUT_TQ = 29;
+        IO_USER_VISIBLE_TQ = 30;
+        COMPOSITOR_TQ = 31;
+        DETACHED_TQ = 32;
+        FRAME_DEFERRABLE_TQ = 33;
+        FRAME_LOADING_CONTROL_TQ = 34;
+        FRAME_LOADING_TQ = 35;
+        FRAME_PAUSABLE_TQ = 36;
+        FRAME_THROTTLEABLE_TQ = 37;
+        FRAME_UNPAUSABLE_TQ = 38;
+        IDLE_TQ = 39;
+        INPUT_TQ = 40;
+        IPC_TRACKING_FOR_CACHED_PAGES_TQ = 41;
+        NON_WAKING_TQ = 42;
+        OTHER_TQ = 43;
+        V8_TQ = 44;
+        WEB_SCHEDULING_TQ = 45;
+        WORKER_IDLE_TQ = 46;
+        WORKER_PAUSABLE_TQ = 47;
+        WORKER_THREAD_INTERNAL_TQ = 48;
+        WORKER_THROTTLEABLE_TQ = 49;
+        WORKER_UNPAUSABLE_TQ = 50;
+        WORKER_WEB_SCHEDULING_TQ = 51;
+        UI_USER_BLOCKING_DEFERRABLE_TQ = 52 [deprecated = true];
+        IO_USER_BLOCKING_DEFERRABLE_TQ = 53 [deprecated = true];
+        UI_BEFORE_UNLOAD_BROWSER_RESPONSE_TQ = 54;
+        IO_BEFORE_UNLOAD_BROWSER_RESPONSE_TQ = 55;
+        V8_USER_VISIBLE_TQ = 56;
+        V8_BEST_EFFORT_TQ = 57;
+    }
+}
+
+message AndroidToolbar {
+    optional BlockCaptureReason block_capture_reason = 1;
+    enum BlockCaptureReason {
+        BLOCKED_UNKNOWN = 0;
+        BLOCKED_TOOLBAR_OR_RESULT_NULL = 1;
+        BLOCKED_VIEW_NOT_DIRTY = 2;
+        BLOCKED_SNAPSHOT_SAME = 3;
+        BLOCKED_URL_BAR_HAS_FOCUS = 4;
+        BLOCKED_URL_BAR_FOCUS_IN_PROGRESS = 5;
+        BLOCKED_OPTIONAL_BUTTON_ANIMATION_IN_PROGRESS = 6;
+        BLOCKED_STATUS_ICON_ANIMATION_IN_PROGRESS = 7;
+        BLOCKED_SCROLL_ABLATION = 8;
+        BLOCKED_BROWSER_CONTROLS_LOCKED = 9;
+        BLOCKED_TAB_SWITCHER_MODE = 10;
+        BLOCKED_COMPOSITOR_IN_MOTION = 11;
+        BLOCKED_NTP_Y_TRANSLATION = 12;
+        BLOCKED_FULLSCREEN = 13;
+    }
+    
+    optional AllowCaptureReason allow_capture_reason = 2;
+    enum AllowCaptureReason {
+        ALLOWED_UNKNOWN = 0;
+        ALLOWED_FORCE_CAPTURE = 1;
+        ALLOWED_SNAPSHOT_DIFFERENCE = 2;
+    }
+    
+    optional SnapshotDifference snapshot_difference = 3;
+    enum SnapshotDifference {
+        DIFF_NONE = 0;
+        DIFF_NULL = 1;
+        DIFF_TINT = 2;
+        DIFF_TAB_COUNT = 3;
+        DIFF_OPTIONAL_BUTTON = 4;
+        DIFF_VISUAL_STATE = 5;
+        DIFF_SECURITY_ICON = 6;
+        DIFF_SHOWING_UPDATE_BADGE = 7;
+        DIFF_PAINT_PREVIEW = 8;
+        DIFF_PROGRESS = 9;
+        DIFF_LOCATION_BAR_WIDTH = 10;
+        DIFF_URL_TEXT = 11;
+        DIFF_HOME_BUTTON = 12;
+        DIFF_TITLE_TEXT = 13;
+        DIFF_CCT_ANIMATION = 14;
+        DIFF_BOOKMARK_BUTTON = 15;
+        DIFF_BACK_BUTTON = 16;
+        DIFF_FORWARD_BUTTON = 17;
+        DIFF_RELOAD_BUTTON = 18;
+    }
+}
+
+message ActiveProcesses {
+    repeated int32 pid = 1;
+}
+
+message UkmPageLoadTimingUpdate {
+    optional int64 ukm_source_id = 1;
+    optional string latest_url = 2;
+    optional float latest_cumulative_layout_shift = 3;
+    optional double latest_largest_contentful_paint_ms = 4;
+    optional double first_contentful_paint_ms = 5;
+}
+
+message V8StackFrame {
+    optional string function_name = 1;
+    
+    optional ScriptLocation script_location = 2;
+    message ScriptLocation {
+        optional string source_url = 1;
+        optional int64 line_number = 2;
+        optional int64 column_number = 3;
+    }
+}
+
+message BlinkExecutionContext {
+    optional ContextType type = 1;
+    enum ContextType {
+        UNKNOWN_CONTEXT = 0;
+        WINDOW = 1;
+        WORKLET = 2;
+        DEDICATED_WORKER = 3;
+        SHARED_WORKER = 4;
+        SERVICE_WORKER = 5;
+    }
+    
+    optional string url = 2;
+    optional string origin = 3;
+    
+    optional WorldType world_type = 4;
+    enum WorldType {
+        WORLD_UNKNOWN = 0;
+        WORLD_MAIN = 1;
+        WORLD_ISOLATED = 2;
+        WORLD_INSPECTOR_ISOLATED = 3;
+        WORLD_REG_EXP = 4;
+        WORLD_FOR_V8_CONTEXT_SNAPSHOT_NON_MAIN = 5;
+        WORLD_WORKER = 6;
+        WORLD_SHADOW_REALM = 7;
+    }
+}
+
+message BlinkSourceLocation {
+    optional string function_name = 1;
+    optional int32 script_id = 2;
+    optional string url = 3;
+    optional int32 line_number = 4;
+    optional int32 column_number = 5;
+    optional string stack_trace = 6;
+    repeated V8StackFrame stack_frames = 7;
+}
+
+message BlinkHighEntropyAPI {
+    optional BlinkExecutionContext execution_context = 1;
+    
+    optional CalledJsApi called_api = 2;
+    message CalledJsApi {
+        optional string identifier = 1;
+        repeated JSFunctionArgument func_arguments = 2;
+        optional BlinkSourceLocation source_location = 3 [deprecated = true];
+    }
+    
+    optional BlinkSourceLocation source_location = 3;
+    
+    optional FontLookup font_lookup = 4;
+    message FontLookup {
+        optional FontLookupType type = 1;
+        enum FontLookupType {
+            FONT_LOOKUP_UNKNOWN_TYPE = 0;
+            FONT_LOOKUP_UNIQUE_OR_FAMILY_NAME = 1;
+            FONT_LOOKUP_UNIQUE_NAME_ONLY = 2;
+        }
+        
+        optional string name = 2;
+        optional uint64 weight = 3;
+        optional uint64 width = 4;
+        optional uint64 slope = 5;
+    }
+    
+    message JSFunctionArgument {
+        optional ArgumentType type = 1;
+        enum ArgumentType {
+            UNKNOWN_TYPE = 0;
+            NULL_TYPE = 1;
+            UNDEFINED = 2;
+            BIGINT = 3;
+            BOOLEAN = 4;
+            FUNCTION = 5;
+            NUMBER = 6;
+            STRING = 7;
+            SYMBOL = 8;
+            OBJECT = 9;
+        }
+        
+        optional string value = 2;
+    }
+}
+
+message TabSwitchMeasurement {
+    optional Result result = 1;
+    enum Result {
+        RESULT_UNSPECIFIED = 0;
+        RESULT_SUCCESS = 1;
+        RESULT_INCOMPLETE = 2;
+        RESULT_MISSED_TAB_HIDE = 3;
+    }
+    
+    optional TabState tab_state = 2;
+    enum TabState {
+        STATE_UNSPECIFIED = 0;
+        STATE_WITH_SAVED_FRAMES = 1;
+        STATE_LOADED_NO_SAVED_FRAMES = 2;
+        STATE_NOT_LOADED_NO_SAVED_FRAMES = 3;
+    }
+}
+
+message ScrollDeltas {
+    optional int64 trace_id = 1;
+    optional float original_delta_x = 2;
+    optional float original_delta_y = 3;
+    optional int64 coalesced_to_trace_id = 4;
+    optional float provided_to_compositor_delta_x = 5;
+    optional float provided_to_compositor_delta_y = 6;
+    optional int64 visual_offset_x = 7;
+    optional int64 visual_offset_y = 8;
+    optional int32 event_count_in_gpu_frame = 9;
+    repeated int64 trace_ids_in_gpu_frame = 10;
+    optional float original_delta_in_gpu_frame_y = 11;
+    optional float predicted_delta_in_gpu_frame_y = 12;
+    repeated float segregated_original_deltas_in_gpu_frame_y = 13;
+    repeated float segregated_predicted_deltas_in_gpu_frame_y = 14;
+    optional bool did_overscroll_root = 15;
+    optional float unused_delta_x = 16;
+    optional float unused_delta_y = 17;
+}
+
+message WinRenderAudioFromSource {
+    optional uint32 iaudioclient_buffer_size_frames = 1;
+    optional uint32 iaudioclient_buffer_unfilled_frames = 2;
+    optional uint32 packet_size_frames = 3;
+    optional uint64 num_written_frames = 4;
+    optional uint64 num_played_out_frames = 5;
+    optional uint64 iaudioclock_device_frequency = 6;
+    optional uint64 iaudioclock_stream_position = 7;
+    optional uint64 iaudioclock_qpc_position = 8;
+    optional int64 iaudioclock_stream_position_increase_ms = 9;
+    optional int64 iaudioclock_qpc_position_increase_ms = 10;
+    optional int64 playout_delay_ms = 11;
+}
+
+message MacAUHALStream {
+    optional int32 input_buffer_size = 1;
+    optional uint32 output_buffer_size = 2;
+    optional int32 sample_rate = 3;
+    optional int64 os_request_playout_timeticks_us = 4;
+    optional int32 source_request_frames = 5;
+    optional int64 source_request_playout_delay_us = 6;
+    optional int64 source_request_playout_timeticks_us = 7;
+    optional int64 source_request_current_timeticks_us = 8;
+    optional int64 hardware_latency_us = 9;
+    optional bool audiotimestamp_host_time_valid = 10;
+    optional int64 audiotimestamp_mach_timeticks_us = 11;
+    optional double audiotimestamp_sample_time_frames = 12;
+    optional double audiotimestamp_last_sample_time_frames = 13;
+    optional int64 lost_audio_duration_us = 14;
+}
+
+message LinuxAlsaOutput {
+    optional int64 source_request_playout_delay_us = 1;
+    optional int32 forward_bytes = 2;
+    optional int32 sample_rate = 3;
+    optional int32 getcurrentdelay_pcm_delay_frames = 4;
+    optional int32 getcurrentdelay_alsa_buffer_frames = 5;
+    optional int32 getcurrentdelay_available_frames = 6;
+    optional int32 getcurrentdelay_final_delay_frames = 7;
+}
+
+message LinuxPulseOutput {
+    optional int64 source_request_playout_delay_us = 1;
+    optional int32 sample_rate = 2;
+    optional int32 input_buffer_size_frames = 3;
+    optional uint32 stream_request_bytes = 4;
+    optional uint32 frame_size_bytes = 5;
+}
+
+message CrasUnified {
+    optional int64 underrun_duration_us = 1;
+    optional int64 last_underrun_duration_us = 2;
+    optional int64 underrun_glitch_duration_us = 3;
+    optional int64 latency_us = 4;
+    optional int32 requested_frames = 5;
+    optional uint32 filled_frames = 6;
+    optional int32 sample_rate = 7;
+}
+
+message ChromeUnguessableToken {
+    optional uint64 low_token = 1;
+    optional uint64 high_token = 2;
+}
+
+message FrameSinkId {
+    optional uint32 frame_sink_client_id = 1;
+    optional uint32 frame_sink_id = 2;
+}
+
+message LocalSurfaceId {
+    optional uint32 parent_sequence_number = 1;
+    optional uint32 child_sequence_number = 2;
+    optional ChromeUnguessableToken unguessable_token = 3;
+}
+
+message ChromeGraphicsPipeline {
+    optional StepName step = 1;
+    enum StepName {
+        STEP_UNKNOWN = 0;
+        STEP_DID_NOT_PRODUCE_FRAME = 1;
+        STEP_DID_NOT_PRODUCE_COMPOSITOR_FRAME = 22;
+        STEP_GENERATE_COMPOSITOR_FRAME = 2;
+        STEP_GENERATE_RENDER_PASS = 3;
+        STEP_ISSUE_BEGIN_FRAME = 4;
+        STEP_RECEIVE_COMPOSITOR_FRAME = 5;
+        STEP_RECEIVE_BEGIN_FRAME = 6;
+        STEP_RECEIVE_BEGIN_FRAME_DISCARD = 7;
+        STEP_SEND_BEGIN_MAIN_FRAME = 8 [deprecated = true];
+        STEP_SUBMIT_COMPOSITOR_FRAME = 9;
+        STEP_DRAW_AND_SWAP = 21;
+        STEP_SURFACE_AGGREGATION = 10;
+        STEP_SEND_BUFFER_SWAP = 11;
+        STEP_BUFFER_SWAP_POST_SUBMIT = 12;
+        STEP_FINISH_BUFFER_SWAP = 13;
+        STEP_SWAP_BUFFERS_ACK = 14;
+        STEP_EXO_CONSTRUCT_COMPOSITOR_FRAME = 15;
+        STEP_EXO_SUBMIT_COMPOSITOR_FRAME = 16;
+        STEP_EXO_DISCARD_COMPOSITOR_FRAME = 17;
+        STEP_BACKEND_SEND_BUFFER_SWAP = 18;
+        STEP_BACKEND_SEND_BUFFER_POST_SUBMIT = 19;
+        STEP_BACKEND_FINISH_BUFFER_SWAP = 20;
+        STEP_SEND_ON_BEGIN_FRAME_MOJO_MESSAGE = 23;
+        STEP_SEND_ON_STANDALONE_BEGIN_FRAME_MOJO_MESSAGE = 24;
+        STEP_SEND_SUBMIT_COMPOSITOR_FRAME_MOJO_MESSAGE = 25;
+    }
+    
+    optional FrameSinkId frame_sink_id = 2;
+    optional int64 surface_frame_trace_id = 10;
+    optional int64 display_trace_id = 3;
+    repeated int64 aggregated_surface_frame_trace_ids = 8;
+    optional LocalSurfaceId local_surface_id = 4;
+    optional int64 frame_sequence = 5;
+    
+    optional FrameSkippedReason frame_skipped_reason = 6;
+    enum FrameSkippedReason {
+        SKIPPED_REASON_UNKNOWN = 0;
+        SKIPPED_REASON_RECOVER_LATENCY = 1;
+        SKIPPED_REASON_NO_DAMAGE = 2;
+        SKIPPED_REASON_WAITING_ON_MAIN = 3;
+        SKIPPED_REASON_DRAW_THROTTLED = 4;
+    }
+    
+    optional int64 backend_frame_id = 7;
+    repeated int64 latency_ids = 9;
+    optional AndroidChoreographerFrameCallbackData possible_deadlines = 11;
+}
+
+message LibunwindstackUnwinder {
+    optional ErrorCode error_code = 1;
+    enum ErrorCode {
+        ERROR_NONE = 0;
+        ERROR_MEMORY_INVALID = 1;
+        ERROR_UNWIND_INFO = 2;
+        ERROR_UNSUPPORTED = 3;
+        ERROR_INVALID_MAP = 4;
+        ERROR_MAX_FRAMES_EXCEEDED = 5;
+        ERROR_REPEATED_FRAME = 6;
+        ERROR_INVALID_ELF = 7;
+        ERROR_THREAD_DOES_NOT_EXIST = 8;
+        ERROR_THREAD_TIMEOUT = 9;
+        ERROR_SYSTEM_CALL = 10;
+        ERROR_BAD_ARCH = 11;
+        ERROR_MAPS_PARSE = 12;
+        ERROR_INVALID_PARAMETER_LIBUNWINDSTACK = 13;
+        ERROR_PTRACE_CALL = 14;
+    }
+    
+    optional int32 num_frames = 2;
+}
+
+message ScrollPredictorMetrics {
+    optional EventFrameValue prev_event_frame_value = 1;
+    message EventFrameValue {
+        optional int64 event_trace_id = 1;
+        optional float delta_value_pixels = 2;
+    }
+    
+    optional EventFrameValue cur_event_frame_value = 2;
+    optional EventFrameValue next_event_frame_value = 3;
+    optional float janky_value_pixels = 4;
+    optional bool has_missed_vsyncs = 5;
+    optional bool is_slow_scroll = 6;
+}
+
+message PageLoad {
+    optional int64 navigation_id = 1;
+    optional string url = 2;
+}
+
+message StartUp {
+    optional int64 activity_id = 1;
+    
+    optional LaunchCauseType launch_cause = 3;
+    enum LaunchCauseType {
+        UNINITIALIZED = -1;
+        OTHER = 0;
+        CUSTOM_TAB = 1;
+        TWA = 2;
+        RECENTS = 3;
+        RECENTS_OR_BACK = 4;
+        FOREGROUND_WHEN_LOCKED = 5;
+        MAIN_LAUNCHER_ICON = 6;
+        MAIN_LAUNCHER_ICON_SHORTCUT = 7;
+        HOME_SCREEN_WIDGET = 8;
+        OPEN_IN_BROWSER_FROM_MENU = 9;
+        EXTERNAL_SEARCH_ACTION_INTENT = 10;
+        NOTIFICATION = 11;
+        EXTERNAL_VIEW_INTENT = 12;
+        OTHER_CHROME = 13;
+        WEBAPK_CHROME_DISTRIBUTOR = 14;
+        WEBAPK_OTHER_DISTRIBUTOR = 15;
+        HOME_SCREEN_SHORTCUT = 16;
+        SHARE_INTENT = 17;
+        NFC = 18;
+        AUTH_TAB = 19;
+    }
+}
+
+message WebContentInteraction {
+    optional Type type = 1;
+    enum Type {
+        INTERACTION_UNSPECIFIED = 0;
+        INTERACTION_KEYBOARD = 1;
+        INTERACTION_CLICK_TAP = 2;
+        INTERACTION_DRAG = 3 [deprecated = true];
+    }
+    
+    optional int64 total_duration_ms = 2;
+}
+
+message ScrollMetrics {
+    optional int64 frame_count = 1;
+    optional int64 vsync_count = 2;
+    optional int64 missed_vsync_max = 3;
+    optional int64 missed_vsync_sum = 4;
+    optional int64 delayed_frame_count = 5;
+    optional int64 predictor_janky_frame_count = 6;
+}
+
+message EventForwarder {
+    optional int32 history_size = 1;
+    optional int64 oldest_time_ns = 2;
+    optional int64 latest_time_ns = 5;
+    optional float x_pixel = 3;
+    optional float y_pixel = 4;
+    optional bool has_x_movement = 6;
+    optional bool has_y_movement = 7;
+}
+
+message TouchDispositionGestureFilter {
+    optional int32 gesture_count = 1;
+}
+
+message ViewClassName {
+    optional string name = 1;
+}
+
+message ChromeCompositorSchedulerStateV2 {
+    optional ChromeCompositorStateMachineV2 state_machine = 1;
+    optional bool observing_begin_frame_source = 2;
+    optional bool begin_impl_frame_deadline_task = 3;
+    optional bool pending_begin_frame_task = 4;
+    optional bool skipped_last_frame_missed_exceeded_deadline = 5;
+    optional ChromeCompositorSchedulerActionV2 inside_action = 7;
+    
+    optional BeginImplFrameDeadlineMode deadline_mode = 8;
+    enum BeginImplFrameDeadlineMode {
+        DEADLINE_MODE_UNSPECIFIED = 0;
+        DEADLINE_MODE_NONE = 1;
+        DEADLINE_MODE_IMMEDIATE = 2;
+        DEADLINE_MODE_REGULAR = 3;
+        DEADLINE_MODE_LATE = 4;
+        DEADLINE_MODE_BLOCKED = 5;
+        DEADLINE_MODE_WAIT_FOR_SCROLL = 6;
+    }
+    
+    optional int64 deadline_us = 9;
+    optional int64 deadline_scheduled_at_us = 10;
+    optional int64 now_us = 11;
+    optional int64 now_to_deadline_delta_us = 12;
+    optional int64 now_to_deadline_scheduled_at_delta_us = 13;
+    optional BeginImplFrameArgsV2 begin_impl_frame_args = 14;
+    optional BeginFrameObserverStateV2 begin_frame_observer_state = 15;
+    optional BeginFrameSourceStateV2 begin_frame_source_state = 16;
+    optional CompositorTimingHistoryV2 compositor_timing_history = 17;
+    
+    reserved 6;
+}
+
+message ChromeCompositorStateMachineV2 {
+    optional MajorStateV2 major_state = 1;
+    message MajorStateV2 {
+        optional ChromeCompositorSchedulerActionV2 next_action = 1;
+        
+        optional BeginImplFrameState begin_impl_frame_state = 2;
+        enum BeginImplFrameState {
+            BEGIN_IMPL_FRAME_UNSPECIFIED = 0;
+            BEGIN_IMPL_FRAME_IDLE = 1;
+            BEGIN_IMPL_FRAME_INSIDE_BEGIN_FRAME = 2;
+            BEGIN_IMPL_FRAME_INSIDE_DEADLINE = 3;
+        }
+        
+        optional BeginMainFrameState begin_main_frame_state = 3;
+        enum BeginMainFrameState {
+            BEGIN_MAIN_FRAME_UNSPECIFIED = 0;
+            BEGIN_MAIN_FRAME_IDLE = 1;
+            BEGIN_MAIN_FRAME_SENT = 2;
+            BEGIN_MAIN_FRAME_READY_TO_COMMIT = 3;
+        }
+        
+        optional LayerTreeFrameSinkState layer_tree_frame_sink_state = 4;
+        enum LayerTreeFrameSinkState {
+            LAYER_TREE_FRAME_UNSPECIFIED = 0;
+            LAYER_TREE_FRAME_NONE = 1;
+            LAYER_TREE_FRAME_ACTIVE = 2;
+            LAYER_TREE_FRAME_CREATING = 3;
+            LAYER_TREE_FRAME_WAITING_FOR_FIRST_COMMIT = 4;
+            LAYER_TREE_FRAME_WAITING_FOR_FIRST_ACTIVATION = 5;
+        }
+        
+        optional ForcedRedrawOnTimeoutState forced_redraw_state = 5;
+        enum ForcedRedrawOnTimeoutState {
+            FORCED_REDRAW_UNSPECIFIED = 0;
+            FORCED_REDRAW_IDLE = 1;
+            FORCED_REDRAW_WAITING_FOR_COMMIT = 2;
+            FORCED_REDRAW_WAITING_FOR_ACTIVATION = 3;
+            FORCED_REDRAW_WAITING_FOR_DRAW = 4;
+        }
+    }
+    
+    optional MinorStateV2 minor_state = 2;
+    message MinorStateV2 {
+        optional int32 commit_count = 1;
+        optional int32 current_frame_number = 2;
+        optional int32 last_frame_number_submit_performed = 3;
+        optional int32 last_frame_number_draw_performed = 4;
+        optional int32 last_frame_number_begin_main_frame_sent = 5;
+        optional bool did_draw = 6;
+        optional bool did_send_begin_main_frame_for_current_frame = 7;
+        optional bool did_notify_begin_main_frame_not_expected_until = 8;
+        optional bool did_notify_begin_main_frame_not_expected_soon = 9;
+        optional bool wants_begin_main_frame_not_expected = 10;
+        optional bool did_commit_during_frame = 11;
+        optional bool did_invalidate_layer_tree_frame_sink = 12;
+        optional bool did_perform_impl_side_invalidaion = 13;
+        optional bool did_prepare_tiles = 14;
+        optional int32 consecutive_checkerboard_animations = 15;
+        optional int32 pending_submit_frames = 16;
+        optional int32 submit_frames_with_current_layer_tree_frame_sink = 17;
+        optional bool needs_redraw = 18;
+        optional bool needs_prepare_tiles = 19;
+        optional bool needs_begin_main_frame = 20;
+        optional bool needs_one_begin_impl_frame = 21;
+        optional bool visible = 22;
+        optional bool begin_frame_source_paused = 23;
+        optional bool can_draw = 24;
+        optional bool resourceless_draw = 25;
+        optional bool has_pending_tree = 26;
+        optional bool pending_tree_is_ready_for_activation = 27;
+        optional bool active_tree_needs_first_draw = 28;
+        optional bool active_tree_is_ready_to_draw = 29;
+        optional bool did_create_and_initialize_first_layer_tree_frame_sink = 30;
+        
+        optional TreePriority tree_priority = 31;
+        enum TreePriority {
+            TREE_PRIORITY_UNSPECIFIED = 0;
+            TREE_PRIORITY_SAME_PRIORITY_FOR_BOTH_TREES = 1;
+            TREE_PRIORITY_SMOOTHNESS_TAKES_PRIORITY = 2;
+            TREE_PRIORITY_NEW_CONTENT_TAKES_PRIORITY = 3;
+        }
+        
+        optional ScrollHandlerState scroll_handler_state = 32;
+        enum ScrollHandlerState {
+            SCROLL_HANDLER_UNSPECIFIED = 0;
+            SCROLL_AFFECTS_SCROLL_HANDLER = 1;
+            SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER = 2;
+        }
+        
+        optional bool critical_begin_main_frame_to_activate_is_fast = 33;
+        optional bool main_thread_missed_last_deadline = 34;
+        optional bool video_needs_begin_frames = 36;
+        optional bool defer_begin_main_frame = 37;
+        optional bool last_commit_had_no_updates = 38;
+        optional bool did_draw_in_last_frame = 39;
+        optional bool did_submit_in_last_frame = 40;
+        optional bool needs_impl_side_invalidation = 41;
+        optional bool current_pending_tree_is_impl_side = 42;
+        optional bool previous_pending_tree_was_impl_side = 43;
+        optional bool processing_animation_worklets_for_active_tree = 44;
+        optional bool processing_animation_worklets_for_pending_tree = 45;
+        optional bool processing_paint_worklets_for_pending_tree = 46;
+        optional bool should_warm_up = 47;
+        
+        reserved 35;
+    }
+}
+
+message BeginFrameArgsV2 {
+    optional BeginFrameArgsType type = 1;
+    enum BeginFrameArgsType {
+        BEGIN_FRAME_ARGS_TYPE_UNSPECIFIED = 0;
+        BEGIN_FRAME_ARGS_TYPE_INVALID = 1;
+        BEGIN_FRAME_ARGS_TYPE_NORMAL = 2;
+        BEGIN_FRAME_ARGS_TYPE_MISSED = 3;
+    }
+    
+    optional uint64 source_id = 2;
+    optional uint64 sequence_number = 3;
+    optional int64 frame_time_us = 4;
+    optional int64 deadline_us = 5;
+    optional int64 interval_delta_us = 6;
+    optional bool on_critical_path = 7;
+    optional bool animate_only = 8;
+    optional int64 frames_throttled_since_last = 11;
+    
+    oneof created_from {
+        uint64 source_location_iid = 9;
+        SourceLocation source_location = 10;
+    }
+}
+
+message BeginImplFrameArgsV2 {
+    optional int64 updated_at_us = 1;
+    optional int64 finished_at_us = 2;
+    
+    optional State state = 3;
+    enum State {
+        BEGIN_FRAME_FINISHED = 0;
+        BEGIN_FRAME_USING = 1;
+    }
+    
+    optional TimestampsInUs timestamps_in_us = 6;
+    message TimestampsInUs {
+        optional int64 interval_delta = 1;
+        optional int64 now_to_deadline_delta = 2;
+        optional int64 frame_time_to_now_delta = 3;
+        optional int64 frame_time_to_deadline_delta = 4;
+        optional int64 now = 5;
+        optional int64 frame_time = 6;
+        optional int64 deadline = 7;
+    }
+    
+    oneof args {
+        BeginFrameArgsV2 current_args = 4;
+        BeginFrameArgsV2 last_args = 5;
+    }
+}
+
+message BeginFrameObserverStateV2 {
+    optional int64 dropped_begin_frame_args = 1;
+    optional BeginFrameArgsV2 last_begin_frame_args = 2;
+}
+
+message BeginFrameSourceStateV2 {
+    optional uint32 source_id = 1;
+    optional bool paused = 2;
+    optional uint32 num_observers = 3;
+    optional BeginFrameArgsV2 last_begin_frame_args = 4;
+}
+
+message CompositorTimingHistoryV2 {
+    optional int64 begin_main_frame_queue_critical_estimate_delta_us = 1;
+    optional int64 begin_main_frame_queue_not_critical_estimate_delta_us = 2;
+    optional int64 begin_main_frame_start_to_ready_to_commit_estimate_delta_us = 3;
+    optional int64 commit_to_ready_to_activate_estimate_delta_us = 4;
+    optional int64 prepare_tiles_estimate_delta_us = 5;
+    optional int64 activate_estimate_delta_us = 6;
+    optional int64 draw_estimate_delta_us = 7;
+}
+
+message WebViewStartup {
+    optional bool from_ui_thread = 1;
+    
+    optional CallSite call_site = 2;
+    enum CallSite {
+        GET_AW_TRACING_CONTROLLER = 0;
+        GET_AW_PROXY_CONTROLLER = 1;
+        WEBVIEW_INSTANCE = 2;
+        GET_STATICS = 3;
+        GET_DEFAULT_GEOLOCATION_PERMISSIONS = 4;
+        GET_DEFAULT_SERVICE_WORKER_CONTROLLER = 5;
+        GET_WEB_ICON_DATABASE = 6;
+        GET_DEFAULT_WEB_STORAGE = 7;
+        GET_DEFAULT_WEBVIEW_DATABASE = 8;
+        GET_TRACING_CONTROLLER = 9;
+        ASYNC_WEBVIEW_STARTUP = 10;
+    }
+}
+
+message AnimationFrameTimingInfo {
+    optional int64 blocking_duration_ms = 1;
+    optional int64 duration_ms = 2;
+    optional int64 num_scripts = 3;
+    optional BeginFrameId begin_frame_id = 4;
+}
+
+message AnimationFrameScriptTimingInfo {
+    optional int64 style_duration_ms = 1;
+    optional int64 layout_duration_ms = 2;
+    optional int64 pause_duration_ms = 3;
+    optional string class_like_name = 4;
+    optional string property_like_name = 5;
+    optional string source_location_url = 6;
+    optional string source_location_function_name = 7;
+    optional int64 source_location_char_position = 8;
+    
+    optional InvokerType invoker_type = 9;
+    enum InvokerType {
+        UNDEFINED = 0;
+        CLASSIC_SCRIPT = 1;
+        MODULE_SCRIPT = 2;
+        USER_CALLBACK = 3;
+        EVENT_HANDLER = 4;
+        PROMISE_RESOLVE = 5;
+        PROMISE_REJECT = 6;
+    }
+    
+    optional ThirdPartyTechnology third_party_technology = 10;
+    enum ThirdPartyTechnology {
+        UNSPECIFIED = 0;
+        NONE = 1;
+        WORD_PRESS = 2;
+        GOOGLE_ANALYTICS = 3;
+        GOOGLE_FONT_API = 4;
+        GOOGLE_TAG_MANAGER = 5;
+        GOOGLE_MAPS = 6;
+        META_PIXEL = 7;
+        YOUTUBE = 8;
+        ADOBE_ANALYTICS = 9;
+        TIKTOK_PIXEL = 10;
+        HOTJAR = 11;
+        GOOGLE_ADSENSE = 12;
+        GOOGLE_PUBLISHER_TAG = 13;
+        GOOGLE_ADS_LIBRARIES = 14;
+        FUNDING_CHOICES = 15;
+        ELEMENTOR = 16;
+        SLIDER_REVOLUTION = 17;
+    }
+}
+
+message BeginFrameId {
+    optional uint64 source_id = 1;
+    optional uint64 sequence_number = 2;
+}
+
+message MainFramePipeline {
+    optional uint64 main_frame_id = 1;
+    
+    optional Step step = 2;
+    enum Step {
+        UNKNOWN = 0;
+        SEND_BEGIN_MAIN_FRAME = 1;
+        BEGIN_MAIN_FRAME = 2;
+        ABORTED_ON_MAIN = 3;
+        COMMIT_ON_MAIN = 4;
+        READY_TO_COMMIT_ON_IMPL = 5;
+        COMMIT_ON_IMPL = 6;
+        COMMIT_COMPLETE = 7;
+        READY_TO_ACTIVATE = 8;
+        ACTIVATE = 9;
+        DRAW = 10;
+        UPDATE_DISPLAY_TREE = 11;
+    }
+    
+    optional BeginFrameId begin_frame_id = 3;
+    
+    optional AbortedOnMainReason aborted_on_main_reason = 4;
+    enum AbortedOnMainReason {
+        ABORTED_MAIN_REASON_UNKNOWN = 0;
+        NOT_VISIBLE = 1;
+        DEFERRED_UPDATE = 2;
+        DEFERRED_COMMIT_ABORTED = 3;
+        NO_UPDATE = 4;
+    }
+    
+    optional BeginFrameId last_begin_frame_id_during_first_draw = 5;
+}
+
+message CurrentTask {
+    optional uint64 event_offset_from_task_start_time_us = 1;
+    optional uint64 task_start_time_us = 2;
+    optional uint64 task_queueing_time_us = 3;
+    optional uint64 task_queued_time_us = 4;
+}
+
+message ChromeLatencyInfo2 {
+    optional int64 trace_id = 1;
+    
+    optional Step step = 2;
+    enum Step {
+        STEP_UNSPECIFIED = 0;
+        STEP_SEND_INPUT_EVENT_UI = 3;
+        STEP_SEND_DISPATCH_EVENT_MOJO_MESSAGE = 15;
+        STEP_HANDLE_INPUT_EVENT_IMPL = 5;
+        STEP_RESAMPLE_SCROLL_EVENTS = 14;
+        STEP_DID_HANDLE_INPUT_AND_OVERSCROLL = 8;
+        STEP_HANDLE_INPUT_EVENT_MAIN = 4;
+        STEP_MAIN_THREAD_SCROLL_UPDATE = 2;
+        STEP_HANDLE_INPUT_EVENT_MAIN_COMMIT = 1;
+        STEP_HANDLED_INPUT_EVENT_MAIN_OR_IMPL = 9;
+        STEP_HANDLED_INPUT_EVENT_IMPL = 10;
+        STEP_TOUCH_EVENT_HANDLED = 12;
+        STEP_GESTURE_EVENT_HANDLED = 13;
+        STEP_SWAP_BUFFERS = 6 [deprecated = true];
+        STEP_DRAW_AND_SWAP = 7 [deprecated = true];
+        STEP_FINISHED_SWAP_BUFFERS = 11 [deprecated = true];
+    }
+    
+    optional int32 frame_tree_node_id = 3;
+    
+    repeated ComponentInfo component_info = 4;
+    message ComponentInfo {
+        optional LatencyComponentType component_type = 1;
+        optional uint64 time_us = 2;
+    }
+    
+    optional bool is_coalesced = 5;
+    optional int64 gesture_scroll_id = 6;
+    optional int64 touch_id = 7;
+    
+    optional InputType input_type = 8;
+    enum InputType {
+        UNDEFINED_EVENT = 0;
+        MOUSE_DOWN_EVENT = 1;
+        MOUSE_UP_EVENT = 2;
+        MOUSE_MOVE_EVENT = 3;
+        MOUSE_ENTER_EVENT = 4;
+        MOUSE_LEAVE_EVENT = 5;
+        CONTEXT_MENU_EVENT = 6;
+        MOUSE_WHEEL_EVENT = 7;
+        RAW_KEY_DOWN_EVENT = 8;
+        KEY_DOWN_EVENT = 9;
+        KEY_UP_EVENT = 10;
+        CHAR_EVENT = 11;
+        GESTURE_SCROLL_BEGIN_EVENT = 12;
+        GESTURE_SCROLL_END_EVENT = 13;
+        GESTURE_SCROLL_UPDATE_EVENT = 14;
+        GESTURE_FLING_START_EVENT = 15;
+        GESTURE_FLING_CANCEL_EVENT = 16;
+        GESTURE_PINCH_BEGIN_EVENT = 17;
+        GESTURE_PINCH_END_EVENT = 18;
+        GESTURE_PINCH_UPDATE_EVENT = 19;
+        GESTURE_BEGIN_EVENT = 20;
+        GESTURE_TAP_DOWN_EVENT = 21;
+        GESTURE_SHOW_PRESS_EVENT = 22;
+        GESTURE_TAP_EVENT = 23;
+        GESTURE_TAP_CANCEL_EVENT = 24;
+        GESTURE_SHORT_PRESS_EVENT = 25;
+        GESTURE_LONG_PRESS_EVENT = 26;
+        GESTURE_LONG_TAP_EVENT = 27;
+        GESTURE_TWO_FINGER_TAP_EVENT = 28;
+        GESTURE_TAP_UNCONFIRMED_EVENT = 29;
+        GESTURE_DOUBLE_TAP_EVENT = 30;
+        GESTURE_END_EVENT = 31;
+        TOUCH_START_EVENT = 32;
+        TOUCH_MOVE_EVENT = 33;
+        TOUCH_END_EVENT = 34;
+        TOUCH_CANCEL_EVENT = 35;
+        TOUCH_SCROLL_STARTED_EVENT = 36;
+        POINTER_DOWN_EVENT = 37;
+        POINTER_UP_EVENT = 38;
+        POINTER_MOVE_EVENT = 39;
+        POINTER_RAW_UPDATE_EVENT = 40;
+        POINTER_CANCEL_EVENT = 41;
+        POINTER_CAUSED_UA_ACTION_EVENT = 42;
+    }
+    
+    optional InputResultState input_result_state = 9;
+    enum InputResultState {
+        UNKNOWN = 0;
+        CONSUMED = 1;
+        NOT_CONSUMED = 2;
+        NO_CONSUMER_EXISTS = 3;
+        IGNORED = 4;
+        SET_NON_BLOCKING = 5;
+        SET_NON_BLOCKING_DUE_TO_FLING = 6;
+    }
+    
+    repeated int64 coalesced_trace_ids = 10;
+    
+    enum LatencyComponentType {
+        COMPONENT_UNSPECIFIED = 0;
+        COMPONENT_INPUT_EVENT_LATENCY_BEGIN_RWH = 1;
+        COMPONENT_INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL = 2;
+        COMPONENT_INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL = 3;
+        COMPONENT_INPUT_EVENT_LATENCY_ORIGINAL = 4;
+        COMPONENT_INPUT_EVENT_LATENCY_UI = 5;
+        COMPONENT_INPUT_EVENT_LATENCY_RENDERER_MAIN = 6;
+        COMPONENT_INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN = 7;
+        COMPONENT_INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL = 8;
+        COMPONENT_INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT = 9;
+        COMPONENT_INPUT_EVENT_LATENCY_ACK_RWH = 10;
+        COMPONENT_INPUT_EVENT_LATENCY_RENDERER_SWAP = 11;
+        COMPONENT_DISPLAY_COMPOSITOR_RECEIVED_FRAME = 12;
+        COMPONENT_INPUT_EVENT_GPU_SWAP_BUFFER = 13;
+        COMPONENT_INPUT_EVENT_LATENCY_FRAME_SWAP = 14;
+    }
+}
+
+message EventTiming {
+    optional bool cancelable = 1;
+    optional string frame = 2;
+    optional uint32 interaction_id = 3;
+    optional uint32 interaction_offset = 4;
+    optional int64 node_id = 5;
+    optional int64 key_code = 6;
+    optional int32 pointer_id = 7;
+    optional uint64 fallback_time_us = 8;
+    
+    optional EventType type = 9;
+    enum EventType {
+        UNDEFINED = 0;
+        AUX_CLICK_EVENT = 1;
+        CLICK_EVENT = 2;
+        CONTEXT_MENU_EVENT = 3;
+        DOUBLE_CLICK_EVENT = 4;
+        MOUSE_DOWN_EVENT = 5;
+        MOUSE_ENTER_EVENT = 6;
+        MOUSE_LEAVE_EVENT = 7;
+        MOUSE_OUT_EVENT = 9;
+        MOUSE_OVER_EVENT = 10;
+        MOUSE_UP_EVENT = 11;
+        POINTER_OVER_EVENT = 12;
+        POINTER_ENTER_EVENT = 13;
+        POINTER_DOWN_EVENT = 14;
+        POINTER_UP_EVENT = 15;
+        POINTER_CANCEL_EVENT = 16;
+        POINTER_OUT_EVENT = 17;
+        POINTER_LEAVE_EVENT = 18;
+        GOT_POINTER_CAPTURE_EVENT = 19;
+        LOST_POINTER_CAPTURE_EVENT = 20;
+        TOUCH_START_EVENT = 21;
+        TOUCH_END_EVENT = 22;
+        TOUCH_CANCEL_EVENT = 23;
+        KEY_DOWN_EVENT = 24;
+        KEY_PRESS_EVENT = 25;
+        KEY_UP_EVENT = 26;
+        BEFORE_INPUT_EVENT = 27;
+        INPUT_EVENT = 28;
+        COMPOSITION_START_EVENT = 29;
+        COMPOSITION_UPDATE_EVENT = 30;
+        COMPOSITION_END_EVENT = 31;
+        DRAG_START_EVENT = 32;
+        DRAG_END_EVENT = 33;
+        DRAG_ENTER_EVENT = 34;
+        DRAG_LEAVE_EVENT = 35;
+        DRAG_OVER_EVENT = 36;
+        DROP_EVENT = 37;
+    }
+}
+
+message AndroidChoreographerFrameCallbackData {
+    optional int64 frame_time_us = 1;
+    
+    repeated FrameTimeline frame_timeline = 2;
+    message FrameTimeline {
+        optional int64 vsync_id = 1;
+        optional int64 latch_delta_us = 2;
+        optional int64 present_delta_us = 3;
+    }
+    
+    optional int64 preferred_frame_timeline_index = 3;
+}
+
+message ChromeTrackEvent {
+    extend TrackEvent {
+        optional ChromeAppState chrome_app_state = 1000;
+        optional ChromeMemoryPressureNotification chrome_memory_pressure_notification = 1001;
+        optional ChromeTaskAnnotator chrome_task_annotator = 1002;
+        optional ChromeBrowserContext chrome_browser_context = 1003;
+        optional ChromeProfileDestroyer chrome_profile_destroyer = 1004;
+        optional ChromeTaskPostedToDisabledQueue chrome_task_posted_to_disabled_queue = 1005;
+        optional ChromeRasterTask chrome_raster_task = 1006;
+        optional ChromeMessagePumpForUI chrome_message_pump_for_ui = 1007;
+        optional RenderFrameImplDeletion render_frame_impl_deletion = 1008;
+        optional ShouldSwapBrowsingInstancesResult should_swap_browsing_instances_result = 1009;
+        optional FrameTreeNodeInfo frame_tree_node_info = 1010;
+        optional ChromeHashedPerformanceMark chrome_hashed_performance_mark = 1011;
+        optional RenderProcessHost render_process_host = 1012;
+        optional RenderProcessHostCleanup render_process_host_cleanup = 1013;
+        optional RenderProcessHostListener render_process_host_listener_changed = 1014;
+        optional ChildProcessLauncherPriority child_process_launcher_priority = 1015;
+        optional ResourceBundle resource_bundle = 1016;
+        optional ChromeWebAppBadNavigate chrome_web_app_bad_navigate = 1017;
+        optional ChromeExtensionId chrome_extension_id = 1018;
+        optional SiteInstance site_instance = 1019;
+        optional RenderViewHost render_view_host = 1020;
+        optional RenderFrameProxyHost render_frame_proxy_host = 1021;
+        optional AndroidViewDump android_view_dump = 1022;
+        optional ParkableStringCompressInBackground parkable_string_compress_in_background = 1023;
+        optional ParkableStringUnpark parkable_string_unpark = 1024;
+        optional ChromeSamplingProfilerSampleCollected chrome_sampling_profiler_sample_completed = 1025;
+        optional SendBeginMainFrameToCommitBreakdown send_begin_mainframe_to_commit_breakdown = 1026;
+        optional GlobalRenderFrameHostId global_render_frame_host_id = 1027;
+        optional RenderFrameHost render_frame_host = 1028;
+        optional ChromeThreadPoolTask thread_pool_task = 1029;
+        optional BackForwardCacheCanStoreDocumentResult back_forward_cache_can_store_document_result = 1030;
+        optional RendererMainThreadTaskExecution renderer_main_thread_task_execution = 1031;
+        optional EventLatency event_latency = 1032;
+        optional ProcessSingleton process_singleton = 1033;
+        optional SiteInstanceGroup site_instance_group = 1034;
+        optional BrowsingContextState browsing_context_state = 1035;
+        optional DeviceThermalState device_thermal_state = 1036;
+        optional NavigationHandle navigation = 1037;
+        optional AndroidIPC android_ipc = 1038;
+        optional ChromeSqlDiagnostics sql_diagnostics = 1039;
+        optional SequenceManagerTask sequence_manager_task = 1040;
+        optional AndroidToolbar android_toolbar = 1041;
+        optional ActiveProcesses active_processes = 1042;
+        optional BlinkTaskScope blink_task_scope = 1043;
+        optional UkmPageLoadTimingUpdate ukm_page_load_timing_update = 1044;
+        optional BlinkHighEntropyAPI high_entropy_api = 1045;
+        optional TabSwitchMeasurement tab_switch_measurement = 1046;
+        optional ScrollDeltas scroll_deltas = 1047;
+        optional WinRenderAudioFromSource win_render_audio_from_source = 1048;
+        optional MacAUHALStream mac_auhal_stream = 1049;
+        optional LinuxAlsaOutput linux_alsa_output = 1050;
+        optional LinuxPulseOutput linux_pulse_output = 1051;
+        optional ChromeGraphicsPipeline chrome_graphics_pipeline = 1052;
+        optional CrasUnified chromeos_cras_unified = 1053;
+        optional LibunwindstackUnwinder libunwindstack_unwinder = 1054;
+        optional ScrollPredictorMetrics scroll_predictor_metrics = 1055;
+        optional PageLoad page_load = 1056;
+        optional StartUp startup = 1057;
+        optional WebContentInteraction web_content_interaction = 1058;
+        optional EventForwarder event_forwarder = 1059;
+        optional TouchDispositionGestureFilter touch_disposition_gesture_filter = 1060;
+        optional ViewClassName view_class_name = 1061;
+        optional ChromeCompositorSchedulerStateV2 cc_scheduler_state = 1062;
+        optional WebViewStartup webview_startup = 1063;
+        optional AnimationFrameTimingInfo animation_frame_timing_info = 1064;
+        optional AnimationFrameScriptTimingInfo animation_frame_script_timing_info = 1065;
+        optional ScrollMetrics scroll_metrics = 1066;
+        optional MainFramePipeline main_frame_pipeline = 1067;
+        optional ChromeLatencyInfo2 chrome_latency_info = 1068;
+        optional EventTiming event_timing = 1069;
+        optional AndroidChoreographerFrameCallbackData android_choreographer_frame_callback_data = 1070;
+        optional CurrentTask current_task = 1071;
+        optional WebExposedIsolationInfo web_exposed_isolation_info = 1072;
+        optional UrlInfo url_info = 1073;
+        optional BeginFrameId begin_frame_id = 1074;
+    }
+}
+
+enum ChromeAppState {
+    APP_STATE_FOREGROUND = 1;
+    APP_STATE_BACKGROUND = 2;
+}
+
+enum MemoryPressureLevel {
+    MEMORY_PRESSURE_LEVEL_NONE = 0;
+    MEMORY_PRESSURE_LEVEL_MODERATE = 1;
+    MEMORY_PRESSURE_LEVEL_CRITICAL = 2;
+}
+
+enum FrameDeleteIntention {
+    FRAME_DELETE_INTENTION_NOT_MAIN_FRAME = 0;
+    FRAME_DELETE_INTENTION_SPECULATIVE_MAIN_FRAME_FOR_SHUTDOWN = 1;
+    FRAME_DELETE_INTENTION_SPECULATIVE_MAIN_FRAME_FOR_NAVIGATION_CANCELLED = 2;
+}
+
+enum ShouldSwapBrowsingInstance {
+    SHOULD_SWAP_BROWSING_INSTANCE_NO = 0;
+    SHOULD_SWAP_BROWSING_INSTANCE_YES_FORCE_SWAP = 1;
+    SHOULD_SWAP_BROWSING_INSTANCE_YES_CROSS_SITE_PROACTIVE_SWAP = 2;
+    SHOULD_SWAP_BROWSING_INSTANCE_YES_SAME_SITE_PROACTIVE_SWAP = 3;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_PROACTIVE_SWAP_DISABLED = 4;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_NOT_MAIN_FRAME = 5;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_HAS_RELATED_ACTIVE_CONTENTS = 6;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_DOES_NOT_HAVE_SITE = 7;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_SOURCE_URL_SCHEME_NOT_HTTP_OR_HTTPS = 8;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_DESTINATION_URL_SCHEME_NOT_HTTP_OR_HTTPS = 9;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_SAME_SITE_NAVIGATION = 10;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_RELOADING_ERROR_PAGE = 11;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_ALREADY_HAS_MATCHING_BROWSING_INSTANCE = 12;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_RENDERER_DEBUG_URL = 13;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_NOT_NEEDED_FOR_BACK_FORWARD_CACHE = 14;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_SAME_DOCUMENT_NAVIGATION = 15;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_SAME_URL_NAVIGATION = 16;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_WILL_REPLACE_ENTRY = 17;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_RELOAD = 18;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_GUEST = 19;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_HAS_NOT_COMMITTED_ANY_NAVIGATION = 20;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_UNLOAD_HANDLER_EXISTS_ON_SAME_SITE_NAVIGATION = 21;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_NOT_PRIMARY_MAIN_FRAME = 22;
+    SHOULD_SWAP_BROWSING_INSTANCE_NO_INITIATOR_REQUESTED_NO_PROACTIVE_SWAP = 23;
+}
+
+enum DeviceThermalState {
+    DEVICE_THERMAL_STATE_UNKNOWN = 0;
+    DEVICE_THERMAL_STATE_NOMINAL = 1;
+    DEVICE_THERMAL_STATE_FAIR = 2;
+    DEVICE_THERMAL_STATE_SERIOUS = 3;
+    DEVICE_THERMAL_STATE_CRITICAL = 4;
+}
+
+enum ChromeCompositorSchedulerActionV2 {
+    CC_SCHEDULER_ACTION_V2_UNSPECIFIED = 0;
+    CC_SCHEDULER_ACTION_V2_NONE = 1;
+    CC_SCHEDULER_ACTION_V2_SEND_BEGIN_MAIN_FRAME = 2;
+    CC_SCHEDULER_ACTION_V2_COMMIT = 3;
+    CC_SCHEDULER_ACTION_V2_POST_COMMIT = 14;
+    CC_SCHEDULER_ACTION_V2_ACTIVATE_SYNC_TREE = 4;
+    CC_SCHEDULER_ACTION_V2_DRAW_IF_POSSIBLE = 5;
+    CC_SCHEDULER_ACTION_V2_DRAW_FORCED = 6;
+    CC_SCHEDULER_ACTION_V2_DRAW_ABORT = 7;
+    CC_SCHEDULER_ACTION_V2_UPDATE_DISPLAY_TREE = 15;
+    CC_SCHEDULER_ACTION_V2_BEGIN_LAYER_TREE_FRAME_SINK_CREATION = 8;
+    CC_SCHEDULER_ACTION_V2_PREPARE_TILES = 9;
+    CC_SCHEDULER_ACTION_V2_INVALIDATE_LAYER_TREE_FRAME_SINK = 10;
+    CC_SCHEDULER_ACTION_V2_PERFORM_IMPL_SIDE_INVALIDATION = 11;
+    CC_SCHEDULER_ACTION_V2_NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL = 12;
+    CC_SCHEDULER_ACTION_V2_NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON = 13;
+}

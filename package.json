@@ -1,0 +1,49 @@
+{
+  "name": "ubisoft-dmx-decode",
+  "version": "1.0.0",
+  "description": "Decode the values sent in Ubisoft's dmx.upc.ubisoft.com API",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "gen-demux": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/generated/. --ts_proto_opt=oneof=unions --ts_proto_opt=outputEncodeMethods=false --ts_proto_opt=outputJsonMethods=false --ts_proto_opt=esModuleInterop=true --ts_proto_opt=env=node ./proto/proto_demux/demux.proto"
+  },
+  "author": {
+    "name": "Charlie Laabs",
+    "url": "https://github.com/claabs"
+  },
+  "keywords": [
+    "ubisoft",
+    "ubi",
+    "ubisoft connect",
+    "uplay",
+    "grpc",
+    "protobuf",
+    "protocol buffer"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.2",
+    "glob": "^11.0.3",
+    "protobufjs": "^7.5.4",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/fs-extra": "^11.0.4",
+    "@types/glob": "^9.0.0",
+    "@types/node": "^24.10.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.1.0",
+    "ts-node": "^10.9.2",
+    "ts-proto": "^2.8.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3"
+  }
+}
